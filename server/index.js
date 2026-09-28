@@ -5,6 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const QRCode = require('qrcode');
+const { authenticator } = require('otplib');
 const { getPool } = require('./db');
 const { recommend } = require('./recommender');
 const app = express();
@@ -18,6 +19,7 @@ app.post('/api/auth/login', async (req, res) => {
   const r = await pool.request().input('u', req.body.username).query('SELECT * FROM Users WHERE username=@u');
   const u = r.recordset[0];
   if (!u || !(await bcrypt.compare(req.body.password || '', u.hash))) return res.status(401).json({ error: 'bad credentials' });
+  if (u.totpEnabled) return res.json({ totpRequired: true, userId: u.id });
   res.json({ token: jwt.sign({ id: u.id, role: u.role }, process.env.JWT_SECRET, { expiresIn: '8h' }), role: u.role });
 });
 app.get('/api/catalog', auth, async (req, res) => {
@@ -130,5 +132,34 @@ app.put('/api/profile', auth, async (req, res) => {
     .input('av', b.avatar || null)
     .query('UPDATE Users SET firstName=@fn, middleName=@mn, lastName=@ln, dob=@dob, email=@em, phone=@ph, addrStreet=@st, addrBarangay=@br, addrCity=@ct, addrProvince=@pv, addrPostal=@pc, avatar=@av WHERE id=@id');
   res.json({ ok: true });
+});
+app.post('/api/settings/totp/setup', auth, async (req, res) => {
+  const secret = authenticator.generateSecret();
+  const pool = await getPool();
+  const u = (await pool.request().input('id', req.user.id).query('SELECT username FROM Users WHERE id=@id')).recordset[0];
+  await pool.request().input('id', req.user.id).input('s', secret).query('UPDATE Users SET totpSecret=@s WHERE id=@id');
+  const otpauth_url = authenticator.keyuri(u.username, 'StoTomasLibrary', secret);
+  res.json({ secret, otpauth_url, qr: await QRCode.toDataURL(otpauth_url) });
+});
+app.post('/api/settings/totp/verify', auth, async (req, res) => {
+  const pool = await getPool();
+  const u = (await pool.request().input('id', req.user.id).query('SELECT totpSecret FROM Users WHERE id=@id')).recordset[0];
+  if (!u || !u.totpSecret || !authenticator.check((req.body || {}).code || '', u.totpSecret)) return res.status(400).json({ error: 'bad code' });
+  await pool.request().input('id', req.user.id).query('UPDATE Users SET totpEnabled=1 WHERE id=@id');
+  res.json({ ok: true });
+});
+app.post('/api/settings/totp/disable', auth, async (req, res) => {
+  const pool = await getPool();
+  const u = (await pool.request().input('id', req.user.id).query('SELECT hash FROM Users WHERE id=@id')).recordset[0];
+  if (!u || !(await bcrypt.compare((req.body || {}).password || '', u.hash))) return res.status(400).json({ error: 'password wrong' });
+  await pool.request().input('id', req.user.id).query('UPDATE Users SET totpEnabled=0, totpSecret=NULL WHERE id=@id');
+  res.json({ ok: true });
+});
+app.post('/api/auth/totp', async (req, res) => {
+  const { userId, code } = req.body || {};
+  const pool = await getPool();
+  const u = (await pool.request().input('id', userId).query('SELECT * FROM Users WHERE id=@id')).recordset[0];
+  if (!u || !u.totpEnabled || !authenticator.check(code || '', u.totpSecret || '')) return res.status(401).json({ error: 'bad code' });
+  res.json({ token: jwt.sign({ id: u.id, role: u.role }, process.env.JWT_SECRET, { expiresIn: '8h' }), role: u.role });
 });
 app.listen(process.env.PORT || 4000, () => console.log('API on ' + (process.env.PORT || 4000)));
