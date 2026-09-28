@@ -26,23 +26,23 @@
   --r-pill: 9999px;
 }
 [data-theme="dark"] {
-  --canvas: #010102;
-  --s1: #0f1011;
-  --s2: #141516;
-  --s3: #18191a;
-  --primary: #5e6ad2;
-  --primary-ink: #ffffff;
-  --hover: #828fff;
-  --focus: #5e69d1;
-  --ink: #f7f8f8;
-  --muted: #d0d6e0;
-  --subtle: #8a8f98;
-  --faint: #62666d;
-  --line: #23252a;
-  --line-strong: #34343a;
-  --success: #27a644;
+  --canvas: #15110c;
+  --s1: #1f1a14;
+  --s2: #292219;
+  --s3: #332a1f;
+  --primary: #fb8126;
+  --primary-ink: #1c1005;
+  --hover: #ffa057;
+  --focus: #c2410c;
+  --ink: #faf5ec;
+  --muted: #d6cec0;
+  --subtle: #a39c8d;
+  --faint: #6f6759;
+  --line: #3a3227;
+  --line-strong: #52463a;
+  --success: #4ade80;
   --late: #ff9d9d;
-  --shadow: none;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 * { box-sizing: border-box; }
 body {
