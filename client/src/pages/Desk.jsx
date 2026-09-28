@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
+import { ArrowLeftRight, LibraryBig, TriangleAlert } from 'lucide-react';
 import { api } from '../api.js';
 function useCamera(set) {
   const v = useRef(null); const c = useRef(null);
@@ -51,15 +52,15 @@ export default function Desk() {
     if (r.error) alert(r.error); else setOut(r);
   };
   const tiles = [
-    { t: '▤', bg: '#5e6ad2', num: stats.books, lbl: 'Titles in catalog' },
-    { t: '≣', bg: '#f97316', num: stats.active, lbl: 'Currently borrowed' },
-    { t: '!', bg: '#dc2626', num: stats.overdue, lbl: 'Overdue books' },
+    { Icon: LibraryBig, bg: '#5e6ad2', num: stats.books, lbl: 'Titles in catalog' },
+    { Icon: ArrowLeftRight, bg: '#f97316', num: stats.active, lbl: 'Currently borrowed' },
+    { Icon: TriangleAlert, bg: '#dc2626', num: stats.overdue, lbl: 'Overdue books' },
   ];
   return (<div>
     <div className="crumbs">Dashboard / Desk</div>
     <div className="page-head"><h2>Front desk</h2><p>Scan or type both QR codes — one request verifies, commits, and recommends.</p></div>
     <div className="grid three" style={{ marginBottom: 16 }}>
-      {tiles.map((s) => <div key={s.lbl} className="card stat"><span className="tile" style={{ background: s.bg, color: '#fff' }}>{s.t}</span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
+      {tiles.map((s) => <div key={s.lbl} className="card stat"><span className="tile" style={{ background: s.bg, color: '#fff' }}><s.Icon size={22} /></span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
     </div>
     <div className="grid two">
       <div className="card"><h3>Scan</h3><p className="desc">Patron first, then the book copy.</p>

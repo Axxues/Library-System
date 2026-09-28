@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
 export default function Login({ theme, setTheme }) {
   const [f, setF] = useState({ username: '', password: '' });
   const [err, setErr] = useState('');
@@ -25,7 +26,7 @@ export default function Login({ theme, setTheme }) {
     } catch { setErr('Cannot reach the server at localhost:4000.'); }
   };
   return (<div className="loginpage">
-    <button className="iconbtn logintoggle" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? '◐' : '◑'}</button>
+    <button className="iconbtn logintoggle" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}</button>
     <div className="loginhero">
       <span className="orb orb-a" /><span className="orb orb-b" /><span className="orb orb-c" />
       <div className="qrdeco" aria-hidden="true">

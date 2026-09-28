@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, ClipboardList, LogOut, Moon, ScanLine, Search, Settings as SettingsIcon, Sun, UserRound, Users } from 'lucide-react';
 import './theme.css';
 import Login from './pages/Login.jsx';
 import Desk from './pages/Desk.jsx';
@@ -12,12 +13,11 @@ import Settings from './pages/Settings.jsx';
 import { api } from './api.js';
 const gated = (el) => (localStorage.getItem('token') ? el : <Navigate to="/login" />);
 const links = [
-  { to: '/desk', label: 'Desk', ico: '◉' },
-  { to: '/catalog', label: 'Books', ico: '▤' },
-  { to: '/patrons', label: 'Members', ico: 'ⓟ' },
-  { to: '/profile', label: 'Profile', ico: '◍' },
-  { to: '/loans', label: 'Activity', ico: '≣' },
-  { to: '/lookup', label: 'Lookup', ico: '⌕' },
+  { to: '/desk', label: 'Desk', Icon: ScanLine },
+  { to: '/catalog', label: 'Books', Icon: BookOpen },
+  { to: '/patrons', label: 'Members', Icon: Users },
+  { to: '/loans', label: 'Activity', Icon: ClipboardList },
+  { to: '/lookup', label: 'Lookup', Icon: Search },
 ];
 function logout() {
   localStorage.removeItem('token');
@@ -45,10 +45,10 @@ function UserChip() {
     </button>
     {open && (<div className="usermenu" role="menu">
       <div className="usermeta"><span className="avatar">{name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
-      <button className="menurow" onClick={() => { setOpen(false); location.href = '/profile'; }}><span className="ico">◍</span>Profile</button>
-      <button className="menurow" onClick={() => { setOpen(false); location.href = '/settings'; }}><span className="ico">⚙</span>Settings</button>
+      <button className="menurow" onClick={() => { setOpen(false); location.href = '/profile'; }}><span className="ico"><UserRound size={18} /></span>Profile</button>
+      <button className="menurow" onClick={() => { setOpen(false); location.href = '/settings'; }}><span className="ico"><SettingsIcon size={18} /></span>Settings</button>
       <div className="menudivider" />
-      <button className="menurow danger" onClick={logout}><span className="ico">⏻</span>Log out</button>
+      <button className="menurow danger" onClick={logout}><span className="ico"><LogOut size={18} /></span>Log out</button>
     </div>)}
   </span>);
 }
@@ -68,13 +68,12 @@ function Shell({ theme, setTheme }) {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">STO.TOMAS<span> LIBRARY</span></div>
-        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => 'sidelink' + (isActive ? ' active' : '')}><span className="ico">{l.ico}</span>{l.label}</NavLink>)}
-        <button className="sidelink logout" onClick={logout}><span className="ico">⏻</span>Log out</button>
+        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => 'sidelink' + (isActive ? ' active' : '')}><span className="ico"><l.Icon size={18} /></span>{l.label}</NavLink>)}
       </aside>
       <div className="main">
         <header className="topbar">
           <Search />
-          <button className="iconbtn" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? '◐' : '◑'}</button>
+          <button className="iconbtn" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}</button>
           <UserChip />
         </header>
         <div className="container" key={loc.pathname}>

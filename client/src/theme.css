@@ -94,9 +94,7 @@ h3 { font-size: 17px; font-weight: 600; }
 .sidelink:hover { background: var(--s2); text-decoration: none; color: var(--ink); }
 .sidelink.active { background: var(--primary); color: var(--primary-ink); }
 .sidelink .ico { width: 18px; text-align: center; }
-button.sidelink { width: 100%; background: none; border: 0; font-family: inherit; text-align: left; cursor: pointer; }
-.sidelink.logout { margin-top: auto; color: var(--subtle); }
-.sidelink.logout:hover { color: var(--late); }
+.sidelink .ico svg, .menurow .ico svg { vertical-align: -3px; }
 .main { flex: 1; min-width: 0; }
 .topbar {
   position: sticky;
