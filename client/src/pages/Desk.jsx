@@ -18,6 +18,14 @@ function useCamera(set) {
   };
   return { v, c, start };
 }
+function ScanBox({ label, code, setCode, cam, hint }) {
+  return (<div className="scanbox">
+    <div className="field"><label>{label}</label>
+      <div className="row"><div className="grow"><input className="mono" value={code} onChange={(e) => setCode(e.target.value)} placeholder={hint} /></div><button className="secondary" onClick={cam.start}>Camera</button></div>
+    </div>
+    <video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden />
+  </div>);
+}
 export default function Desk() {
   const [patronCode, setP] = useState('P-0001');
   const [copyCode, setC] = useState('B-COPY-001');
@@ -28,14 +36,29 @@ export default function Desk() {
     const r = await (await fetch('http://localhost:4000/api/circulation', { method: 'POST', headers: H(), body: JSON.stringify({ patronCode, copyCode, action }) })).json();
     if (r.error) alert(r.error); else setOut(r);
   };
-  return (<div style={{ display: 'grid', gap: 16 }}>
-    <div className="card"><h3>Circulation — scan or type both codes</h3>
-      <input value={patronCode} onChange={(e) => setP(e.target.value)} placeholder="patron P-0001" /> <button className="secondary" onClick={cam1.start}>Camera</button>
-      <video ref={cam1.v} style={{ width: 220 }} /><canvas ref={cam1.c} hidden /><br /><br />
-      <input value={copyCode} onChange={(e) => setC(e.target.value)} placeholder="copy B-COPY-001" /> <button className="secondary" onClick={cam2.start}>Camera</button>
-      <video ref={cam2.v} style={{ width: 220 }} /><canvas ref={cam2.c} hidden /><br /><br />
-      <button onClick={() => act('checkout')}>Checkout</button> <button className="secondary" onClick={() => act('return')}>Return</button>
+  return (<div>
+    <div className="page-head"><p className="eyebrow">Circulation desk</p><h2>Check out &amp; return</h2><p>Scan or type both QR codes — one request verifies, commits, and recommends.</p></div>
+    <div className="grid two">
+      <div className="card"><h3>Scan</h3><p className="desc">Patron first, then the book copy.</p>
+        <ScanBox label="Patron QR" code={patronCode} setCode={setP} cam={cam1} hint="P-0001" />
+        <ScanBox label="Book copy QR" code={copyCode} setCode={setC} cam={cam2} hint="B-COPY-001" />
+        <div className="actions"><button onClick={() => act('checkout')}>Checkout</button><button className="secondary" onClick={() => act('return')}>Return</button></div>
+      </div>
+      <div className="card"><h3>Receipt</h3>
+        {!out && <p className="desc">No transaction yet — checkout or return to print a receipt with recommendations.</p>}
+        {out && (<div>
+          <div className="receipt-meta"><span className="pill busy">{out.ms}ms</span><span className="subtle mono">{out.loan.checkoutAt ? new Date(out.loan.checkoutAt).toLocaleString() : ''}</span></div>
+          <dl className="kv">
+            <dt>Patron</dt><dd className="mono">{patronCode}</dd>
+            <dt>Copy</dt><dd className="mono">{copyCode}</dd>
+            <dt>Due</dt><dd>{out.loan.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—'}</dd>
+            <dt>Returned</dt><dd>{out.loan.returnAt ? new Date(out.loan.returnAt).toLocaleString() : 'On loan'}</dd>
+          </dl>
+          <p className="eyebrow">Recommended for this reader</p>
+          <div className="recs">{out.recommendations.map((r) => <span key={r.id} className="rec">{r.title}</span>)}</div>
+          <button className="secondary" onClick={() => window.print()}>Print receipt</button>
+        </div>)}
+      </div>
     </div>
-    {out && <div className="card"><h4>Receipt ({out.ms}ms)</h4><pre>{JSON.stringify(out.loan, null, 2)}</pre><p>Recommendations: {out.recommendations.join(', ')}</p><button onClick={() => window.print()}>Print</button></div>}
   </div>);
 }

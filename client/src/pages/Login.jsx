@@ -5,8 +5,12 @@ export default function Login() {
     const r = await (await fetch('http://localhost:4000/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(f) })).json();
     if (r.token) { localStorage.setItem('token', r.token); location.href = '/desk'; } else alert(r.error);
   };
-  return (<div className="card" style={{ maxWidth: 360 }}><h2>Staff login</h2>
-    <input placeholder="username" onChange={(e) => setF({ ...f, username: e.target.value })} /><br /><br />
-    <input type="password" placeholder="password" onChange={(e) => setF({ ...f, password: e.target.value })} /><br /><br />
-    <button onClick={go}>Sign in</button></div>);
+  return (<div className="login-wrap"><div className="card">
+    <p className="eyebrow">Staff only</p>
+    <h2>Sign in</h2>
+    <p className="desc">Circulation desk for Sto. Tomas Municipal Library.</p>
+    <div className="field"><label>Username</label><input placeholder="staff1" onChange={(e) => setF({ ...f, username: e.target.value })} /></div>
+    <div className="field"><label>Password</label><input type="password" placeholder="••••••••" onChange={(e) => setF({ ...f, password: e.target.value })} /></div>
+    <button onClick={go}>Sign in</button>
+  </div></div>);
 }

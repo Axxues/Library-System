@@ -39,14 +39,14 @@ app.get('/api/qr/:code', async (req, res) => {
   res.type('image/png').send(await QRCode.toBuffer(req.params.code));
 });
 async function buildRecs(tx, patronId, scannedBookId) {
-  const cat = (await tx.request().query('SELECT id, author, genre FROM Books')).recordset;
+  const cat = (await tx.request().query('SELECT id, author, genre, title FROM Books')).recordset;
   const hist = (await tx.request().input('p', patronId).query('SELECT DISTINCT b.id FROM Loans l JOIN BookCopies c ON c.id=l.copyId JOIN Books b ON b.id=c.bookId WHERE l.patronId=@p')).recordset.map((x) => x.id);
   const co = (await tx.request().input('p', patronId).input('s', scannedBookId).query(`SELECT b2.id AS id, COUNT(*) AS n FROM Loans l1 JOIN Loans l2 ON l1.patronId=l2.patronId AND l1.id<>l2.id JOIN BookCopies c2 ON c2.id=l2.copyId JOIN Books b2 ON b2.id=c2.bookId JOIN BookCopies cs ON cs.id=l1.copyId WHERE l1.patronId<>@p AND cs.bookId=@s GROUP BY b2.id`)).recordset;
   const pop = (await tx.request().query('SELECT b.id AS id, COUNT(l.id) AS n FROM Books b LEFT JOIN BookCopies c ON c.bookId=b.id LEFT JOIN Loans l ON l.copyId=c.id GROUP BY b.id')).recordset;
   const coMap = Object.fromEntries(co.map((x) => [x.id, x.n]));
   const popMap = Object.fromEntries(pop.map((x) => [x.id, x.n]));
   const scanned = cat.find((b) => b.id === scannedBookId) || null;
-  return recommend(hist, scanned, cat, coMap, popMap, 5);
+  return recommend(hist, scanned, cat, coMap, popMap, 5).map((id) => ({ id, title: cat.find((b) => b.id === id).title }));
 }
 app.post('/api/circulation', auth, async (req, res) => {
   const t0 = Date.now();
