@@ -60,7 +60,7 @@ export default function Settings() {
           {swatches.map((s) => <button key={s} title={s} onClick={() => apply(s)} style={{ width: 36, height: 36, borderRadius: '50%', padding: 0, background: s, border: accent === s ? '3px solid var(--ink)' : '1px solid var(--line)' }} />)}
           <input type="color" value={accent || '#f97316'} onChange={(e) => apply(e.target.value)} style={{ width: 44, height: 36, padding: 2 }} />
         </div>
-        <div className="actions"><button onClick={saveAccent}>Save appearance</button><button className="secondary" onClick={() => { apply(''); localStorage.removeItem('accent'); }}>Reset</button></div>
+        <div className="actions"><button onClick={saveAccent}>Save appearance</button><button className="secondary" onClick={async () => { apply(''); localStorage.removeItem('accent'); try { await api('/api/settings/accent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accent: null }) }); } catch {} }}>Reset</button></div>
       </div>
       <div className="card"><h3>Password</h3><p className="desc">Min 6 characters.</p>
         <div className="field"><label>Current</label><input type="password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} /></div>
