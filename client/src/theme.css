@@ -43,6 +43,8 @@
   --success: #4ade80;
   --late: #ff9d9d;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --loginbg: radial-gradient(700px 420px at 50% 0%, #2b2318 0%, #15110c 70%);
+}
 }
 * { box-sizing: border-box; }
 body {
@@ -314,6 +316,7 @@ video.preview { width: 200px; border-radius: var(--r-md); border: 1px solid var(
 .loginhero .recs { margin-top: 20px; }
 .loginhero .rec { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.35); color: #fff; }
 .loginform { position: relative; display: flex; align-items: center; justify-content: center; padding: 32px; }
+[data-theme="dark"] .loginform { background: var(--loginbg); }
 .loginform .card { width: 100%; max-width: 380px; animation: rise 0.4s ease 0.08s backwards; }
 
 /* motion: one entrance per route + motion that answers actions */
