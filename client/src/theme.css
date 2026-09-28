@@ -253,12 +253,65 @@ video.preview { width: 200px; border-radius: var(--r-md); border: 1px solid var(
 .loanrow { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
 .loanrow .grow { flex: 1; }
 
+/* login: standalone split hero, outside the app shell */
+.loginpage { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; animation: pagein 0.35s ease; }
+.loginhero {
+  background: linear-gradient(160deg, #9a3412, var(--primary) 70%);
+  color: #fff;
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.loginhero .brand { color: #fff; font-size: 20px; }
+.loginhero .brand span { color: #fed7aa; }
+.loginhero h1 { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; margin: 16px 0; }
+.loginhero p { font-size: 16px; opacity: 0.9; max-width: 44ch; }
+.loginhero .recs { margin-top: 20px; }
+.loginhero .rec { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.35); color: #fff; }
+.loginform { display: flex; align-items: center; justify-content: center; padding: 32px; }
+.loginform .card { width: 100%; max-width: 380px; animation: rise 0.4s ease 0.08s backwards; }
+
+/* motion: one entrance per route + motion that answers actions */
+@keyframes pagein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+.container { animation: rise 0.3s ease; }
+.card { transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease, border-color 0.2s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow), 0 8px 24px rgba(28, 25, 23, 0.08); }
+button { transition: background-color 0.15s ease, transform 0.08s ease; }
+button:active { transform: scale(0.97); }
+.sidelink { transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease; }
+.sidelink:hover { transform: translateX(2px); }
+.sidelink.active { transition: background-color 0.2s ease; }
+input { transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+tbody tr { animation: rise 0.3s ease backwards; }
+tbody tr:nth-child(2) { animation-delay: 0.03s; }
+tbody tr:nth-child(3) { animation-delay: 0.06s; }
+tbody tr:nth-child(4) { animation-delay: 0.09s; }
+tbody tr:nth-child(5) { animation-delay: 0.12s; }
+tbody tr:nth-child(6) { animation-delay: 0.15s; }
+tbody tr:nth-child(n+7) { animation-delay: 0.18s; }
+.rec { animation: pop 0.25s ease backwards; }
+.recs .rec:nth-child(2) { animation-delay: 0.05s; }
+.recs .rec:nth-child(3) { animation-delay: 0.1s; }
+.recs .rec:nth-child(4) { animation-delay: 0.15s; }
+.recs .rec:nth-child(n+5) { animation-delay: 0.2s; }
+.pill, .stat .tile, .cover { transition: transform 0.15s ease; }
+body, .sidebar, .topbar, .scanbox { transition: background-color 0.25s ease, border-color 0.25s ease; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
 /* login */
 .login-wrap { max-width: 380px; margin: 72px auto 0; }
 .footer { color: var(--subtle); font-size: 12px; padding: 28px; text-align: center; }
 
 @media (max-width: 900px) {
   .sidebar { display: none; }
+  .loginpage { grid-template-columns: 1fr; }
+  .loginhero { padding: 40px 28px; }
+  .loginhero h1 { font-size: 32px; }
   .grid.two, .grid.three { grid-template-columns: 1fr; }
   .container { padding: 20px 16px 48px; }
   .topbar { padding: 0 16px; }
