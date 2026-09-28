@@ -154,6 +154,7 @@ button.adminchip:hover { background: var(--s2); border-color: var(--line); }
   font-size: 13px;
   font-weight: 700;
 }
+.avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .iconbtn {
   background: var(--s1);
   border: 1px solid var(--line);

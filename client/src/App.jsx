@@ -7,13 +7,16 @@ import Catalog from './pages/Catalog.jsx';
 import Patrons from './pages/Patrons.jsx';
 import Loans from './pages/Loans.jsx';
 import Lookup from './pages/Lookup.jsx';
+import Profile from './pages/Profile.jsx';
 const gated = (el) => (localStorage.getItem('token') ? el : <Navigate to="/login" />);
 const links = [
   { to: '/desk', label: 'Desk', ico: '◉' },
   { to: '/catalog', label: 'Books', ico: '▤' },
   { to: '/patrons', label: 'Members', ico: 'ⓟ' },
+  { to: '/profile', label: 'Profile', ico: '◍' },
   { to: '/loans', label: 'Activity', ico: '≣' },
   { to: '/lookup', label: 'Lookup', ico: '⌕' },
+  { to: '/settings', label: 'Settings', ico: '⚙' },
 ];
 function logout() {
   localStorage.removeItem('token');
@@ -37,10 +40,12 @@ function UserChip() {
   }, []);
   return (<span className="adminwrap" ref={ref}>
     <button className="adminchip" onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open}>
-      <span className="avatar">{name[0].toUpperCase()}</span>{name}
+      <span className="avatar">{me.avatar ? <img src={me.avatar} alt="" /> : name[0].toUpperCase()}</span>{name}
     </button>
     {open && (<div className="usermenu" role="menu">
-      <div className="usermeta"><span className="avatar">{name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
+      <div className="usermeta"><span className="avatar">{me.avatar ? <img src={me.avatar} alt="" /> : name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
+      <button className="secondary" onClick={() => { setOpen(false); location.href = '/profile'; }}>Profile</button>
+      <button className="secondary" onClick={() => { setOpen(false); location.href = '/settings'; }}>Settings</button>
       <button className="secondary danger" onClick={logout}>Log out</button>
     </div>)}
   </span>);
@@ -73,6 +78,7 @@ function Shell({ theme, setTheme }) {
             <Route path="/patrons" element={gated(<Patrons />)} />
             <Route path="/loans" element={gated(<Loans />)} />
             <Route path="/lookup" element={<Lookup />} />
+            <Route path="/profile" element={gated(<Profile />)} />
             <Route path="*" element={<Navigate to="/desk" />} />
           </Routes>
           <div className="footer">Sto. Tomas Municipal Library · Dual-QR Circulation System</div>
