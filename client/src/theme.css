@@ -1,0 +1,6 @@
+:root { --canvas:#010102; --s1:#0f1011; --s2:#141516; --primary:#5e6ad2; --hover:#828fff; --ink:#f7f8f8; --muted:#d0d6e0; --subtle:#8a8f98; --line:#23252a; }
+body { background:var(--canvas); color:var(--ink); font-family:Inter,SF Pro Display,system-ui,sans-serif; margin:0; }
+.card { background:var(--s1); border:1px solid var(--line); border-radius:12px; padding:24px; }
+button { background:var(--primary); color:#fff; border:0; border-radius:8px; padding:8px 14px; font-size:14px; font-weight:500; cursor:pointer; }
+button.secondary { background:var(--s1); color:var(--ink); border:1px solid var(--line); }
+input { background:var(--s1); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px 12px; }
