@@ -1,12 +1,17 @@
 // client/src/pages/Catalog.jsx
 import { useEffect, useState } from 'react';
+import { Cover } from '../cover.jsx';
 export default function Catalog() {
   const [rows, setRows] = useState([]);
+  const [q, setQ] = useState('');
   useEffect(() => { fetch('http://localhost:4000/api/catalog', { headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } }).then((r) => r.json()).then(setRows); }, []);
+  const list = rows.filter((r) => (r.title + r.author + r.copyCode).toLowerCase().includes(q.toLowerCase()));
   return (<div>
-    <div className="page-head"><p className="eyebrow">Collection</p><h2>Catalog</h2><p>Live availability — updates on every checkout and return.</p></div>
-    <div className="card"><table><thead><tr><th>Title</th><th>Author</th><th>Copy</th><th>Status</th><th>QR</th></tr></thead><tbody>
-      {rows.map((r, i) => <tr key={i}><td className="strong">{r.title}</td><td>{r.author}</td><td className="mono">{r.copyCode}</td><td><span className={`pill ${r.status === 'Available' ? 'ok' : 'busy'}`}>{r.status}</span></td><td><a href={`http://localhost:4000/api/qr/${r.copyCode}`} target="_blank" rel="noreferrer">QR</a></td></tr>)}
-    </tbody></table></div>
+    <div className="crumbs">Dashboard / Books</div>
+    <div className="page-head"><div className="row"><div className="grow"><h2>All books</h2><p>Live availability — updates on every checkout and return.</p></div><div style={{ maxWidth: 260 }} className="grow"><input placeholder="Search by name or code" value={q} onChange={(e) => setQ(e.target.value)} /></div></div></div>
+    <div className="card"><table><thead><tr><th>Book</th><th>Copy</th><th>Status</th><th>QR</th></tr></thead><tbody>
+      {list.map((r, i) => <tr key={i}><td><span className="cellmain"><Cover title={r.title} /><span><span className="t">{r.title}</span><br /><span className="s">{r.author}</span></span></span></td><td className="mono">{r.copyCode}</td><td><span className={`pill ${r.status === 'Available' ? 'ok' : 'busy'}`}>{r.status}</span></td><td><a href={`http://localhost:4000/api/qr/${r.copyCode}`} target="_blank" rel="noreferrer">QR</a></td></tr>)}
+    </tbody></table>
+    {list.length === 0 && <p className="desc" style={{ marginTop: 12 }}>No books match.</p>}</div>
   </div>);
 }

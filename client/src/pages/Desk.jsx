@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
 function useCamera(set) {
   const v = useRef(null); const c = useRef(null);
@@ -26,18 +26,35 @@ function ScanBox({ label, code, setCode, cam, hint }) {
     <video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden />
   </div>);
 }
+const H = () => ({ Authorization: 'Bearer ' + localStorage.getItem('token') });
 export default function Desk() {
   const [patronCode, setP] = useState('P-0001');
   const [copyCode, setC] = useState('B-COPY-001');
   const [out, setOut] = useState(null);
+  const [stats, setStats] = useState({ books: '—', active: '—', overdue: '—' });
   const cam1 = useCamera(setP); const cam2 = useCamera(setC);
-  const H = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') });
+  useEffect(() => {
+    Promise.all([
+      fetch('http://localhost:4000/api/catalog', { headers: H() }).then((r) => r.json()),
+      fetch('http://localhost:4000/api/loans?status=active', { headers: H() }).then((r) => r.json()),
+      fetch('http://localhost:4000/api/loans?status=overdue', { headers: H() }).then((r) => r.json()),
+    ]).then(([cat, active, overdue]) => setStats({ books: new Set(cat.map((b) => b.id)).size, active: active.length, overdue: overdue.length })).catch(() => {});
+  }, []);
   const act = async (action) => {
-    const r = await (await fetch('http://localhost:4000/api/circulation', { method: 'POST', headers: H(), body: JSON.stringify({ patronCode, copyCode, action }) })).json();
+    const r = await (await fetch('http://localhost:4000/api/circulation', { method: 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({ patronCode, copyCode, action }) })).json();
     if (r.error) alert(r.error); else setOut(r);
   };
+  const tiles = [
+    { t: '▤', bg: '#5e6ad2', num: stats.books, lbl: 'Titles in catalog' },
+    { t: '≣', bg: '#f97316', num: stats.active, lbl: 'Currently borrowed' },
+    { t: '!', bg: '#dc2626', num: stats.overdue, lbl: 'Overdue books' },
+  ];
   return (<div>
-    <div className="page-head"><p className="eyebrow">Circulation desk</p><h2>Check out &amp; return</h2><p>Scan or type both QR codes — one request verifies, commits, and recommends.</p></div>
+    <div className="crumbs">Dashboard / Desk</div>
+    <div className="page-head"><h2>Front desk</h2><p>Scan or type both QR codes — one request verifies, commits, and recommends.</p></div>
+    <div className="grid three" style={{ marginBottom: 16 }}>
+      {tiles.map((s) => <div key={s.lbl} className="card stat"><span className="tile" style={{ background: s.bg, color: '#fff' }}>{s.t}</span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
+    </div>
     <div className="grid two">
       <div className="card"><h3>Scan</h3><p className="desc">Patron first, then the book copy.</p>
         <ScanBox label="Patron QR" code={patronCode} setCode={setP} cam={cam1} hint="P-0001" />
