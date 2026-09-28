@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, ClipboardList, LogOut, Moon, ScanLine, Search, Settings as SettingsIcon, Sun, UserRound, Users } from 'lucide-react';
+import { BookOpen, ClipboardList, LogOut, Moon, ScanLine, Search as SearchIcon, Settings as SettingsIcon, Sun, UserRound, Users } from 'lucide-react';
 import './theme.css';
 import Login from './pages/Login.jsx';
 import Desk from './pages/Desk.jsx';
@@ -17,7 +17,7 @@ const links = [
   { to: '/catalog', label: 'Books', Icon: BookOpen },
   { to: '/patrons', label: 'Members', Icon: Users },
   { to: '/loans', label: 'Activity', Icon: ClipboardList },
-  { to: '/lookup', label: 'Lookup', Icon: Search },
+  { to: '/lookup', label: 'Lookup', Icon: SearchIcon },
 ];
 function logout() {
   localStorage.removeItem('token');
