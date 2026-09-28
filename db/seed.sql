@@ -1,0 +1,4 @@
+INSERT INTO Users (username, hash, role) VALUES ('admin','$2b$10$N0ommtuhjYUEllRti.ur9O8GnudQuN9VRKBa4x/pnQpzQiTTHVzWq','admin'), ('staff1','$2b$10$TtR6V/L2amno9eJoXpiULOgXX0l.hgAU0B1kdiBeSdkpUVAGX9Or6','staff');
+INSERT INTO Patrons (code, name, contact) VALUES ('P-0001','Ana Santos','ana@example.com'),('P-0002','Jose Cruz','jose@example.com'),('P-0003','Maria Reyes','maria@example.com');
+INSERT INTO Books (title, author, genre, classification) VALUES ('Noli Me Tangere','Jose Rizal','Fiction','PH-FIC'),('El Filibusterismo','Jose Rizal','Fiction','PH-FIC'),('Clean Code','Robert Martin','Technology','QA76'),('The Hobbit','J.R.R. Tolkien','Fantasy','FAN'),('Dune','Frank Herbert','Sci-Fi','SF');
+INSERT INTO BookCopies (copyCode, bookId) VALUES ('B-COPY-001',1),('B-COPY-002',2),('B-COPY-003',3),('B-COPY-004',4),('B-COPY-005',5),('B-COPY-006',1);
