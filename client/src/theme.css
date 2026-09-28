@@ -45,7 +45,6 @@
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   --loginbg: radial-gradient(700px 420px at 50% 0%, #2b2318 0%, #15110c 70%);
 }
-}
 * { box-sizing: border-box; }
 body {
   background: var(--canvas);
