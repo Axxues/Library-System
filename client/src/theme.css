@@ -273,8 +273,9 @@ video.preview { width: 200px; border-radius: var(--r-md); border: 1px solid var(
 .orb-b { width: 280px; height: 280px; background: #7c2d12; bottom: -70px; right: -60px; animation: drift 18s ease-in-out infinite alternate-reverse; }
 .orb-c { width: 180px; height: 180px; background: #fff7ed; opacity: 0.25; top: 44%; left: 52%; animation: drift 11s ease-in-out infinite alternate; }
 @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(46px, 30px) scale(1.12); } }
-/* QR scan motif kept from the redesign */
-.qrdeco { position: absolute; top: 48px; right: 48px; width: 190px; height: 190px; opacity: 0.85; }
+/* QR scan motif: large watermark bled off the bottom-right corner behind copy —
+   one focal point (seal + headline top-left), decoration as backdrop, not sticker */
+.qrdeco { position: absolute; bottom: -70px; right: -70px; width: 320px; height: 320px; opacity: 0.45; top: auto; }
 .finder { position: absolute; width: 48px; height: 48px; border: 6px solid rgba(255, 255, 255, 0.9); border-radius: 8px; }
 .finder::after { content: ""; position: absolute; inset: 8px; background: #fff; border-radius: 2px; }
 .finder.tl { top: 0; left: 0; }
@@ -355,7 +356,7 @@ body, .sidebar, .topbar, .scanbox { transition: background-color 0.25s ease, bor
   .loginpage { grid-template-columns: 1fr; }
   .loginhero { padding: 40px 28px; }
   .loginhero h1 { font-size: 32px; }
-  .qrdeco { width: 130px; height: 130px; top: 24px; right: 24px; }
+  .qrdeco { width: 200px; height: 200px; bottom: -50px; right: -50px; top: auto; }
   .grid.two, .grid.three { grid-template-columns: 1fr; }
   .container { padding: 20px 16px 48px; }
   .topbar { padding: 0 16px; }
