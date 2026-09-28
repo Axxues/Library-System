@@ -94,8 +94,24 @@ app.get('/api/patrons/:code/recommendations', async (req, res) => {
     res.json({ patron: { code: p.code, name: p.name }, activeLoans: loans, recommendations: recs });
   } catch (e) { try { await tx.rollback(); } catch {} res.status(404).json({ error: e.message }); }
 });
-// server/index.js — insert BEFORE app.listen line:
 const PROFILE_COLS = 'id, username, role, firstName, middleName, lastName, dob, email, phone, addrStreet, addrBarangay, addrCity, addrProvince, addrPostal, avatar, totpEnabled, accent';
+app.post('/api/settings/password', auth, async (req, res) => {
+  const { current, next } = req.body || {};
+  if (!next || next.length < 6) return res.status(400).json({ error: 'new password min 6 chars' });
+  const pool = await getPool();
+  const u = (await pool.request().input('id', req.user.id).query('SELECT hash FROM Users WHERE id=@id')).recordset[0];
+  if (!u || !(await bcrypt.compare(current || '', u.hash))) return res.status(400).json({ error: 'current password wrong' });
+  const hash = await bcrypt.hash(next, 10);
+  await pool.request().input('id', req.user.id).input('h', hash).query('UPDATE Users SET hash=@h WHERE id=@id');
+  res.json({ ok: true });
+});
+app.post('/api/settings/accent', auth, async (req, res) => {
+  const { accent } = req.body || {};
+  if (accent !== null && accent !== undefined && !/^#[0-9a-fA-F]{6}$/.test(accent)) return res.status(400).json({ error: 'accent must be #rrggbb' });
+  const pool = await getPool();
+  await pool.request().input('id', req.user.id).input('a', accent || null).query('UPDATE Users SET accent=@a WHERE id=@id');
+  res.json({ ok: true });
+});
 app.get('/api/profile', auth, async (req, res) => {
   const pool = await getPool();
   const r = await pool.request().input('id', req.user.id).query(`SELECT ${PROFILE_COLS} FROM Users WHERE id=@id`);

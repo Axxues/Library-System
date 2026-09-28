@@ -12,3 +12,13 @@ test('profile read returns own row without secrets', async () => {
   assert.strictEqual(p.username, 'staff1');
   assert.ok(!('hash' in p) && !('totpSecret' in p));
 });
+test('password change rejects wrong current pw', async () => {
+  const H = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await login() };
+  const r = await fetch(BASE + '/api/settings/password', { method: 'POST', headers: H, body: JSON.stringify({ current: 'nope', next: 'newpass1' }) });
+  assert.strictEqual(r.status, 400);
+});
+test('bad accent rejected', async () => {
+  const H = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await login() };
+  const r = await fetch(BASE + '/api/settings/accent', { method: 'POST', headers: H, body: JSON.stringify({ accent: 'orange' }) });
+  assert.strictEqual(r.status, 400);
+});
