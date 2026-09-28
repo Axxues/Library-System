@@ -34,7 +34,7 @@ app.get('/api/patrons', auth, async (req, res) => {
 app.get('/api/loans', auth, async (req, res) => {
   const pool = await getPool();
   const where = req.query.status === 'overdue' ? 'WHERE l.returnAt IS NULL AND l.dueAt < SYSDATETIME()' : req.query.status === 'active' ? 'WHERE l.returnAt IS NULL' : '';
-  const r = await pool.request().query(`SELECT l.*, p.code AS patronCode, c.copyCode FROM Loans l JOIN Patrons p ON p.id=l.patronId JOIN BookCopies c ON c.id=l.copyId ${where} ORDER BY l.checkoutAt DESC`);
+  const r = await pool.request().query(`SELECT l.*, p.code AS patronCode, c.copyCode, b.id AS bookId, b.title, b.genre FROM Loans l JOIN Patrons p ON p.id=l.patronId JOIN BookCopies c ON c.id=l.copyId JOIN Books b ON b.id=c.bookId ${where} ORDER BY l.checkoutAt DESC`);
   res.json(r.recordset);
 });
 app.get('/api/qr/:code', async (req, res) => {

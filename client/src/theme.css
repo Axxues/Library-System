@@ -189,6 +189,12 @@ button.adminchip:hover { background: var(--s2); border-color: var(--line); }
 .grid { display: grid; gap: 16px; }
 .grid.two { grid-template-columns: 1fr 1fr; }
 .grid.three { grid-template-columns: repeat(3, 1fr); }
+.dash { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+.bars { display: flex; align-items: flex-end; gap: 10px; height: 170px; padding-top: 8px; }
+.barcol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.barcol span { font-size: 11px; color: var(--subtle); }
+.bar { width: 100%; max-width: 44px; border-radius: 6px 6px 3px 3px; background: var(--s3); border: 1px solid var(--line); }
+.barcol:nth-child(4) .bar { background: var(--primary); border-color: var(--primary); }
 
 /* cards + stats */
 .card { background: var(--s1); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow); }
@@ -387,6 +393,7 @@ body, .sidebar, .topbar, .scanbox { transition: background-color 0.25s ease, bor
 
 @media (max-width: 900px) {
   .sidebar { display: none; }
+  .dash { grid-template-columns: 1fr; }
   .loginpage { grid-template-columns: 1fr; }
   .loginhero { padding: 40px 28px; }
   .loginhero h1 { font-size: 32px; }
