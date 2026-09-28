@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, ClipboardList, LogOut, Moon, ScanLine, Search as SearchIcon, Settings as SettingsIcon, Sun, UserRound, Users } from 'lucide-react';
+import { BookOpen, ClipboardList, LogOut, Moon, QrCode, ScanLine, Search as SearchIcon, Settings as SettingsIcon, Sun, UserRound, Users } from 'lucide-react';
 import './theme.css';
 import Login from './pages/Login.jsx';
 import Desk from './pages/Desk.jsx';
+import Scan from './pages/Scan.jsx';
 import Catalog from './pages/Catalog.jsx';
 import Patrons from './pages/Patrons.jsx';
 import Loans from './pages/Loans.jsx';
@@ -14,6 +15,7 @@ import { api } from './api.js';
 const gated = (el) => (localStorage.getItem('token') ? el : <Navigate to="/login" />);
 const links = [
   { to: '/desk', label: 'Desk', Icon: ScanLine },
+  { to: '/scan', label: 'Scan', Icon: QrCode },
   { to: '/catalog', label: 'Books', Icon: BookOpen },
   { to: '/patrons', label: 'Members', Icon: Users },
   { to: '/loans', label: 'Activity', Icon: ClipboardList },
@@ -79,6 +81,7 @@ function Shell({ theme, setTheme }) {
         <div className="container" key={loc.pathname}>
           <Routes location={loc}>
             <Route path="/desk" element={gated(<Desk />)} />
+            <Route path="/scan" element={gated(<Scan />)} />
             <Route path="/catalog" element={gated(<Catalog />)} />
             <Route path="/patrons" element={gated(<Patrons />)} />
             <Route path="/loans" element={gated(<Loans />)} />

@@ -1,0 +1,71 @@
+import { useRef, useState } from 'react';
+import jsQR from 'jsqr';
+import { api } from '../api.js';
+function useCamera(set) {
+  const v = useRef(null); const c = useRef(null);
+  const start = async () => {
+    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    v.current.srcObject = s;
+    await v.current.play();
+    const tick = () => {
+      const cv = c.current; if (!cv) return;
+      cv.width = v.current.videoWidth; cv.height = v.current.videoHeight;
+      const ctx = cv.getContext('2d'); ctx.drawImage(v.current, 0, 0);
+      const d = ctx.getImageData(0, 0, cv.width, cv.height);
+      const q = jsQR(d.data, cv.width, cv.height);
+      if (q) { set(q.data); s.getTracks().forEach((t) => t.stop()); } else requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  return { v, c, start };
+}
+function ScanBox({ label, code, setCode, cam, hint }) {
+  return (<div className="scanbox">
+    <div className="field"><label>{label}</label>
+      <div className="row"><div className="grow"><input className="mono" value={code} onChange={(e) => setCode(e.target.value)} placeholder={hint} /></div><button className="secondary" onClick={cam.start}>Camera</button></div>
+    </div>
+    <video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden />
+  </div>);
+}
+export default function Scan() {
+  const [patronCode, setP] = useState('P-0001');
+  const [copyCode, setC] = useState('B-COPY-001');
+  const [out, setOut] = useState(null);
+  const cam1 = useCamera(setP); const cam2 = useCamera(setC);
+  const act = async (action) => {
+    let r;
+    try {
+      r = await api('/api/circulation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patronCode, copyCode, action }) });
+    } catch (e) {
+      alert(e.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : e.message);
+      return;
+    }
+    if (r.error) alert(r.error); else setOut(r);
+  };
+  return (<div>
+    <div className="crumbs">Dashboard / Scan</div>
+    <div className="page-head"><h2>Scan &amp; circulate</h2><p>Patron first, then the book copy — one request verifies, commits, and recommends.</p></div>
+    <div className="grid two">
+      <div className="card"><h3>Scan</h3><p className="desc">Camera or typed codes.</p>
+        <ScanBox label="Patron QR" code={patronCode} setCode={setP} cam={cam1} hint="P-0001" />
+        <ScanBox label="Book copy QR" code={copyCode} setCode={setC} cam={cam2} hint="B-COPY-001" />
+        <div className="actions"><button onClick={() => act('checkout')}>Checkout</button><button className="secondary" onClick={() => act('return')}>Return</button></div>
+      </div>
+      <div className="card"><h3>Receipt</h3>
+        {!out && <p className="desc">No transaction yet — checkout or return to print a receipt with recommendations.</p>}
+        {out && (<div>
+          <div className="receipt-meta"><span className="pill busy">{out.ms}ms</span><span className="subtle mono">{out.loan.checkoutAt ? new Date(out.loan.checkoutAt).toLocaleString() : ''}</span></div>
+          <dl className="kv">
+            <dt>Patron</dt><dd className="mono">{patronCode}</dd>
+            <dt>Copy</dt><dd className="mono">{copyCode}</dd>
+            <dt>Due</dt><dd>{out.loan.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—'}</dd>
+            <dt>Returned</dt><dd>{out.loan.returnAt ? new Date(out.loan.returnAt).toLocaleString() : 'On loan'}</dd>
+          </dl>
+          <p className="eyebrow">Recommended for this reader</p>
+          <div className="recs">{out.recommendations.map((r) => <span key={r.id} className="rec">{r.title}</span>)}</div>
+          <button className="secondary" onClick={() => window.print()}>Print receipt</button>
+        </div>)}
+      </div>
+    </div>
+  </div>);
+}
