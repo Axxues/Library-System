@@ -193,6 +193,26 @@ button.adminchip:hover { background: var(--s2); border-color: var(--line); }
 .bars { display: flex; align-items: flex-end; gap: 10px; height: 170px; padding-top: 8px; }
 .barcol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
 .barcol span { font-size: 11px; color: var(--subtle); }
+/* hover details: CSS-only tooltip driven by data-tip */
+[data-tip] { position: relative; }
+[data-tip]:hover::after, [data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--canvas);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  z-index: 20;
+  pointer-events: none;
+  animation: pop 0.12s ease;
+}
+.barcol[data-tip]:hover::after, .barcol[data-tip]:focus-visible::after { bottom: auto; top: calc(100% + 8px); }
 .bar { width: 100%; max-width: 44px; border-radius: 6px 6px 3px 3px; background: var(--s3); border: 1px solid var(--line); }
 .barcol:nth-child(4) .bar { background: var(--primary); border-color: var(--primary); }
 

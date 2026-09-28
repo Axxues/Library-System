@@ -27,7 +27,7 @@ export default function Desk() {
       api('/api/loans?status=overdue'),
       api('/api/loans'),
     ]).then(([cat, active, od, all]) => {
-      setStats({ books: new Set(cat.map((b) => b.id)).size, active: active.length, overdue: od.length });
+      setStats({ books: new Set(cat.map((b) => b.id)).size, active: active.length, overdue: od.length, copies: cat.length, avail: cat.filter((bb) => bb.status === 'Available').length, odPatrons: new Set((Array.isArray(od) ? od : []).map((l) => l.patronCode)).size });
       const loans = Array.isArray(all) ? all : [];
       setRecent(loans.slice(0, 5));
       const buckets = Object.fromEntries(last8().map((m) => [m.key, 0]));
@@ -51,9 +51,9 @@ export default function Desk() {
   }, []);
   const max = Math.max(1, ...trend.map((t) => t.n));
   const tiles = [
-    { Icon: LibraryBig, bg: '#5e6ad2', num: stats.books, lbl: 'Titles in catalog' },
-    { Icon: ArrowLeftRight, bg: '#f97316', num: stats.active, lbl: 'Currently borrowed' },
-    { Icon: TriangleAlert, bg: '#dc2626', num: stats.overdue, lbl: 'Overdue books' },
+    { Icon: LibraryBig, bg: '#5e6ad2', num: stats.books, lbl: 'Titles in catalog', tip: `${stats.avail ?? '—'} of ${stats.copies ?? '—'} copies on shelf` },
+    { Icon: ArrowLeftRight, bg: '#f97316', num: stats.active, lbl: 'Currently borrowed', tip: insights.title !== '—' ? `Most borrowed: ${insights.title}` : 'No checkouts yet' },
+    { Icon: TriangleAlert, bg: '#dc2626', num: stats.overdue, lbl: 'Overdue books', tip: `${stats.odPatrons ?? '—'} patron(s) holding overdue` },
   ];
   const notes = [
     { t: 'Top genre', v: insights.genre },
@@ -66,10 +66,10 @@ export default function Desk() {
     <div className="dash">
       <div className="dash-main">
         <div className="grid three" style={{ marginBottom: 16 }}>
-          {tiles.map((s) => <div key={s.lbl} className="card stat"><span className="tile" style={{ background: s.bg, color: '#fff' }}><s.Icon size={22} /></span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
+          {tiles.map((s) => <div key={s.lbl} className="card stat" data-tip={s.tip} tabIndex={0}><span className="tile" style={{ background: s.bg, color: '#fff' }}><s.Icon size={22} /></span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
         </div>
         <div className="card" style={{ marginBottom: 16 }}><div className="row"><div className="grow"><h3>Borrowing trend</h3><p className="desc">Checkouts per month, last 8 months.</p></div></div>
-          <div className="bars">{trend.map((t) => <div key={t.key} className="barcol"><div className="bar" style={{ height: `${Math.max(6, (t.n / max) * 120)}px` }} title={`${t.n}`} /><span>{t.label}</span></div>)}</div>
+          <div className="bars">{trend.map((t) => <div key={t.key} className="barcol" data-tip={`${t.label} — ${t.n} checkout${t.n === 1 ? '' : 's'}`} tabIndex={0}><div className="bar" style={{ height: `${Math.max(6, (t.n / max) * 120)}px` }} /><span>{t.label}</span></div>)}</div>
         </div>
         <div className="grid three" style={{ marginBottom: 16 }}>
           {notes.map((n) => <div key={n.t} className="card"><p className="eyebrow">{n.t}</p><h3 style={{ margin: 0 }}>{n.v}</h3></div>)}
