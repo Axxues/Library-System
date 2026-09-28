@@ -94,4 +94,25 @@ app.get('/api/patrons/:code/recommendations', async (req, res) => {
     res.json({ patron: { code: p.code, name: p.name }, activeLoans: loans, recommendations: recs });
   } catch (e) { try { await tx.rollback(); } catch {} res.status(404).json({ error: e.message }); }
 });
+// server/index.js — insert BEFORE app.listen line:
+const PROFILE_COLS = 'id, username, role, firstName, middleName, lastName, dob, email, phone, addrStreet, addrBarangay, addrCity, addrProvince, addrPostal, avatar, totpEnabled, accent';
+app.get('/api/profile', auth, async (req, res) => {
+  const pool = await getPool();
+  const r = await pool.request().input('id', req.user.id).query(`SELECT ${PROFILE_COLS} FROM Users WHERE id=@id`);
+  res.json(r.recordset[0] || {});
+});
+app.put('/api/profile', auth, async (req, res) => {
+  const b = req.body || {};
+  if (!b.firstName || !b.lastName) return res.status(400).json({ error: 'first and last name required' });
+  if (b.avatar && b.avatar.length > 50000) return res.status(400).json({ error: 'picture too large (50KB max)' });
+  const pool = await getPool();
+  await pool.request()
+    .input('id', req.user.id).input('fn', b.firstName).input('mn', b.middleName || null)
+    .input('ln', b.lastName).input('dob', b.dob || null).input('em', b.email || null)
+    .input('ph', b.phone || null).input('st', b.addrStreet || null).input('br', b.addrBarangay || null)
+    .input('ct', b.addrCity || null).input('pv', b.addrProvince || null).input('pc', b.addrPostal || null)
+    .input('av', b.avatar || null)
+    .query('UPDATE Users SET firstName=@fn, middleName=@mn, lastName=@ln, dob=@dob, email=@em, phone=@ph, addrStreet=@st, addrBarangay=@br, addrCity=@ct, addrProvince=@pv, addrPostal=@pc, avatar=@av WHERE id=@id');
+  res.json({ ok: true });
+});
 app.listen(process.env.PORT || 4000, () => console.log('API on ' + (process.env.PORT || 4000)));
