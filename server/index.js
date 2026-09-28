@@ -35,7 +35,7 @@ app.get('/api/loans', auth, async (req, res) => {
   const r = await pool.request().query(`SELECT l.*, p.code AS patronCode, c.copyCode FROM Loans l JOIN Patrons p ON p.id=l.patronId JOIN BookCopies c ON c.id=l.copyId ${where} ORDER BY l.checkoutAt DESC`);
   res.json(r.recordset);
 });
-app.get('/api/qr/:code', auth, async (req, res) => {
+app.get('/api/qr/:code', async (req, res) => {
   res.type('image/png').send(await QRCode.toBuffer(req.params.code));
 });
 async function buildRecs(tx, patronId, scannedBookId) {
@@ -51,6 +51,7 @@ async function buildRecs(tx, patronId, scannedBookId) {
 app.post('/api/circulation', auth, async (req, res) => {
   const t0 = Date.now();
   const { patronCode, copyCode, action } = req.body;
+  if (action !== 'checkout' && action !== 'return') return res.status(400).json({ error: 'unknown action' });
   const pool = await getPool(); const tx = pool.transaction();
   try {
     await tx.begin();
@@ -82,8 +83,8 @@ app.post('/api/circulation', auth, async (req, res) => {
 });
 app.get('/api/patrons/:code/recommendations', async (req, res) => {
   const pool = await getPool(); const tx = pool.transaction();
-  await tx.begin();
   try {
+    await tx.begin();
     const p = (await tx.request().input('c', req.params.code).query('SELECT * FROM Patrons WHERE code=@c')).recordset[0];
     if (!p) throw new Error('unknown patron');
     const last = (await tx.request().input('p', p.id).query('SELECT TOP 1 b.id AS bookId FROM Loans l JOIN BookCopies c ON c.id=l.copyId JOIN Books b ON b.id=c.bookId WHERE l.patronId=@p ORDER BY l.checkoutAt DESC')).recordset[0];
