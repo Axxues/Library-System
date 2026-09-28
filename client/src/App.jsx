@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './theme.css';
 import Login from './pages/Login.jsx';
@@ -15,6 +15,36 @@ const links = [
   { to: '/loans', label: 'Activity', ico: '≣' },
   { to: '/lookup', label: 'Lookup', ico: '⌕' },
 ];
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('staff');
+  location.href = '/login';
+}
+function staff() {
+  try { return JSON.parse(localStorage.getItem('staff') || '{}'); } catch { return {}; }
+}
+function UserChip() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const me = staff();
+  const name = me.username || 'Staff';
+  useEffect(() => {
+    const outside = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const esc = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', esc); };
+  }, []);
+  return (<span className="adminwrap" ref={ref}>
+    <button className="adminchip" onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open}>
+      <span className="avatar">{name[0].toUpperCase()}</span>{name}
+    </button>
+    {open && (<div className="usermenu" role="menu">
+      <div className="usermeta"><span className="avatar">{name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
+      <button className="secondary danger" onClick={logout}>Log out</button>
+    </div>)}
+  </span>);
+}
 function Search() {
   const nav = useNavigate();
   const [q, setQ] = useState('');
@@ -28,13 +58,13 @@ function Shell({ theme, setTheme }) {
       <aside className="sidebar">
         <div className="brand">STO.TOMAS<span> LIBRARY</span></div>
         {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => 'sidelink' + (isActive ? ' active' : '')}><span className="ico">{l.ico}</span>{l.label}</NavLink>)}
-        <div className="sidepromo"><strong>Dual-QR circulation</strong>Scan patron + book in one step — receipt prints with picks.</div>
+        <button className="sidelink logout" onClick={logout}><span className="ico">⏻</span>Log out</button>
       </aside>
       <div className="main">
         <header className="topbar">
           <Search />
           <button className="iconbtn" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? '◐' : '◑'}</button>
-          <span className="adminchip"><span className="avatar">S</span>Staff</span>
+          <UserChip />
         </header>
         <div className="container" key={loc.pathname}>
           <Routes location={loc}>

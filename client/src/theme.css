@@ -94,16 +94,9 @@ h3 { font-size: 17px; font-weight: 600; }
 .sidelink:hover { background: var(--s2); text-decoration: none; color: var(--ink); }
 .sidelink.active { background: var(--primary); color: var(--primary-ink); }
 .sidelink .ico { width: 18px; text-align: center; }
-.sidepromo {
-  margin-top: auto;
-  background: var(--s2);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 16px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.sidepromo strong { display: block; color: var(--ink); font-size: 14px; margin-bottom: 4px; }
+button.sidelink { width: 100%; background: none; border: 0; font-family: inherit; text-align: left; cursor: pointer; }
+.sidelink.logout { margin-top: auto; color: var(--subtle); }
+.sidelink.logout:hover { color: var(--late); }
 .main { flex: 1; min-width: 0; }
 .topbar {
   position: sticky;
@@ -119,14 +112,36 @@ h3 { font-size: 17px; font-weight: 600; }
   border-bottom: 1px solid var(--line);
 }
 .topbar .search { flex: 1; max-width: 420px; }
-.adminchip {
-  margin-left: auto;
+.adminwrap { position: relative; margin-left: auto; }
+button.adminchip {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  padding: 4px 10px 4px 4px;
+  color: var(--ink);
+  cursor: pointer;
 }
+button.adminchip:hover { background: var(--s2); border-color: var(--line); }
+.usermenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow), 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 12px;
+  animation: pop 0.15s ease;
+}
+.usermeta { display: flex; gap: 10px; align-items: center; padding: 4px 4px 12px; border-bottom: 1px solid var(--line); margin-bottom: 12px; font-size: 14px; }
+.usermenu .danger { width: 100%; color: var(--late); background: none; border: 1px solid var(--line); }
+.usermenu .danger:hover { background: color-mix(in srgb, var(--late) 10%, transparent); border-color: var(--late); }
 .avatar {
   width: 32px;
   height: 32px;

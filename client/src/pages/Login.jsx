@@ -11,7 +11,7 @@ export default function Login({ theme, setTheme }) {
       setErr('Cannot reach the server at localhost:4000 — start it with node server/index.js first.');
       return;
     }
-    if (r.token) { localStorage.setItem('token', r.token); location.href = '/desk'; } else setErr(r.error || 'Sign in failed.');
+    if (r.token) { localStorage.setItem('token', r.token); localStorage.setItem('staff', JSON.stringify({ username: creds.username, role: r.role || 'staff' })); location.href = '/desk'; } else setErr(r.error || 'Sign in failed.');
   };
   return (<div className="loginpage">
     <button className="iconbtn logintoggle" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? '◐' : '◑'}</button>
