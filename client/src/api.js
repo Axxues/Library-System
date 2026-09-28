@@ -16,5 +16,7 @@ export async function api(path, opts = {}) {
     location.href = '/login';
     throw new Error('unauthorized');
   }
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'request failed');
+  return data;
 }
