@@ -181,6 +181,10 @@ function recommend(historyIds, scannedBook, catalog, coBorrow, popularity, k = 5
   return scored.slice(0, k).map((x) => x.id);
 }
 module.exports = { recommend };
+// RULED 2026-09-28 (Task 2 review): tiebreak is score desc → raw popularity desc → id asc,
+// because capped popularity ties (e.g. 9 vs 5 both cap to 2.5) and the cold-start test
+// requires the raw-most-popular first. Implementation: scored entries carry pop,
+// sort ((a,b) => b.s - a.s || b.pop - a.pop || a.id - b.id).
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
