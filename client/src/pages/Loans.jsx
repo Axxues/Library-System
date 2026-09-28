@@ -1,9 +1,10 @@
 // client/src/pages/Loans.jsx
 import { useEffect, useState } from 'react';
+import { api } from '../api.js';
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 export default function Loans() {
   const [rows, setRows] = useState([]); const [f, setF] = useState('');
-  const load = (s) => fetch('http://localhost:4000/api/loans' + (s ? `?status=${s}` : ''), { headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } }).then((r) => r.json()).then((d) => { setRows(d); setF(s); });
+  const load = (s) => api('/api/loans' + (s ? `?status=${s}` : '')).then((d) => { if (Array.isArray(d)) setRows(d); setF(s); }).catch(() => {});
   useEffect(() => { load(''); }, []);
   return (<div>
     <div className="crumbs">Dashboard / Activity</div>

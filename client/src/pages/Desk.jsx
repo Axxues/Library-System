@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
+import { api } from '../api.js';
 function useCamera(set) {
   const v = useRef(null); const c = useRef(null);
   const start = async () => {
@@ -26,7 +27,6 @@ function ScanBox({ label, code, setCode, cam, hint }) {
     <video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden />
   </div>);
 }
-const H = () => ({ Authorization: 'Bearer ' + localStorage.getItem('token') });
 export default function Desk() {
   const [patronCode, setP] = useState('P-0001');
   const [copyCode, setC] = useState('B-COPY-001');
@@ -35,13 +35,19 @@ export default function Desk() {
   const cam1 = useCamera(setP); const cam2 = useCamera(setC);
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:4000/api/catalog', { headers: H() }).then((r) => r.json()),
-      fetch('http://localhost:4000/api/loans?status=active', { headers: H() }).then((r) => r.json()),
-      fetch('http://localhost:4000/api/loans?status=overdue', { headers: H() }).then((r) => r.json()),
+      api('/api/catalog'),
+      api('/api/loans?status=active'),
+      api('/api/loans?status=overdue'),
     ]).then(([cat, active, overdue]) => setStats({ books: new Set(cat.map((b) => b.id)).size, active: active.length, overdue: overdue.length })).catch(() => {});
   }, []);
   const act = async (action) => {
-    const r = await (await fetch('http://localhost:4000/api/circulation', { method: 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({ patronCode, copyCode, action }) })).json();
+    let r;
+    try {
+      r = await api('/api/circulation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patronCode, copyCode, action }) });
+    } catch (e) {
+      alert(e.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : e.message);
+      return;
+    }
     if (r.error) alert(r.error); else setOut(r);
   };
   const tiles = [

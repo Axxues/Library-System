@@ -1,9 +1,16 @@
 // client/src/pages/Lookup.jsx — public, no login: type ID or camera
 import { useState } from 'react';
 import { Cover } from '../cover.jsx';
+import { api } from '../api.js';
 export default function Lookup() {
   const [code, setCode] = useState('P-0001'); const [out, setOut] = useState(null);
-  const go = async () => setOut(await (await fetch(`http://localhost:4000/api/patrons/${code}/recommendations`)).json());
+  const go = async () => {
+    try {
+      setOut(await api(`/api/patrons/${code}/recommendations`));
+    } catch (e) {
+      setOut({ error: e.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : e.message });
+    }
+  };
   return (<div>
     <div className="crumbs">Lookup</div>
     <div className="page-head"><h2>Find my books</h2><p>Type your patron ID or scan your QR — see your loans and personal picks.</p></div>

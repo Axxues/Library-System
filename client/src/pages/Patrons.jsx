@@ -1,10 +1,11 @@
 // client/src/pages/Patrons.jsx
 import { useEffect, useState } from 'react';
 import { Cover } from '../cover.jsx';
+import { api } from '../api.js';
 export default function Patrons() {
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
-  useEffect(() => { fetch('http://localhost:4000/api/patrons', { headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } }).then((r) => r.json()).then(setRows); }, []);
+  useEffect(() => { api('/api/patrons').then((d) => { if (Array.isArray(d)) setRows(d); }).catch(() => {}); }, []);
   const list = rows.filter((p) => (p.code + p.name).toLowerCase().includes(q.toLowerCase()));
   return (<div>
     <div className="crumbs">Dashboard / Members</div>

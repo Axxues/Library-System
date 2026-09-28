@@ -1,10 +1,11 @@
 // client/src/pages/Catalog.jsx
 import { useEffect, useState } from 'react';
 import { Cover } from '../cover.jsx';
+import { api } from '../api.js';
 export default function Catalog() {
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
-  useEffect(() => { fetch('http://localhost:4000/api/catalog', { headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } }).then((r) => r.json()).then(setRows); }, []);
+  useEffect(() => { api('/api/catalog').then((d) => { if (Array.isArray(d)) setRows(d); }).catch(() => {}); }, []);
   const list = rows.filter((r) => (r.title + r.author + r.copyCode).toLowerCase().includes(q.toLowerCase()));
   return (<div>
     <div className="crumbs">Dashboard / Books</div>
