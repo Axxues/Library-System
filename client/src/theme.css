@@ -98,11 +98,13 @@ h3 { font-size: 17px; font-weight: 600; }
 .sidelink.active { background: var(--primary); color: var(--primary-ink); }
 .sidelink .ico { width: 18px; text-align: center; }
 .sidelink .ico svg, .menurow .ico svg { vertical-align: -3px; }
-.main { flex: 1; min-width: 0; }
+.main { flex: 1; min-width: 0; padding-top: 64px; }
 .topbar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 232px;
+  right: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -424,6 +426,7 @@ body, .sidebar, .topbar, .scanbox { transition: background-color 0.25s ease, bor
 
 @media (max-width: 900px) {
   .sidebar { display: none; }
+  .topbar { left: 0; }
   .dash { grid-template-columns: 1fr; }
   .loginpage { grid-template-columns: 1fr; }
   .loginhero { padding: 40px 28px; }
