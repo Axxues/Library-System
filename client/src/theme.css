@@ -256,6 +256,8 @@ video.preview { width: 200px; border-radius: var(--r-md); border: 1px solid var(
 /* login: standalone split hero, outside the app shell */
 .loginpage { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; animation: pagein 0.35s ease; }
 .loginhero {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(160deg, #9a3412, var(--primary) 70%);
   color: #fff;
   padding: 64px 56px;
@@ -263,13 +265,21 @@ video.preview { width: 200px; border-radius: var(--r-md); border: 1px solid var(
   flex-direction: column;
   justify-content: center;
 }
+.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.5; pointer-events: none; }
+.orb-a { width: 340px; height: 340px; background: #fdba74; top: -90px; left: -90px; animation: drift 14s ease-in-out infinite alternate; }
+.orb-b { width: 280px; height: 280px; background: #7c2d12; bottom: -70px; right: -60px; animation: drift 18s ease-in-out infinite alternate-reverse; }
+.orb-c { width: 180px; height: 180px; background: #fff7ed; opacity: 0.25; top: 44%; left: 52%; animation: drift 11s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(46px, 30px) scale(1.12); } }
+.hero-inner { position: relative; }
+.hero-logo { height: 128px; width: auto; margin-bottom: 16px; filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35)); animation: rise 0.45s ease backwards; }
 .loginhero .brand { color: #fff; font-size: 20px; }
 .loginhero .brand span { color: #fed7aa; }
 .loginhero h1 { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; margin: 16px 0; }
 .loginhero p { font-size: 16px; opacity: 0.9; max-width: 44ch; }
 .loginhero .recs { margin-top: 20px; }
 .loginhero .rec { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.35); color: #fff; }
-.loginform { display: flex; align-items: center; justify-content: center; padding: 32px; }
+.loginform { position: relative; display: flex; align-items: center; justify-content: center; padding: 32px; }
+.themetoggle { position: absolute; top: 20px; right: 20px; }
 .loginform .card { width: 100%; max-width: 380px; animation: rise 0.4s ease 0.08s backwards; }
 
 /* motion: one entrance per route + motion that answers actions */

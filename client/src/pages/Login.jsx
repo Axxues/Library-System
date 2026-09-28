@@ -1,5 +1,5 @@
 import { useState } from 'react';
-export default function Login() {
+export default function Login({ theme, setTheme }) {
   const [f, setF] = useState({ username: '', password: '' });
   const go = async (creds = f) => {
     const r = await (await fetch('http://localhost:4000/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(creds) })).json();
@@ -7,16 +7,21 @@ export default function Login() {
   };
   return (<div className="loginpage">
     <div className="loginhero">
-      <div className="brand">STO.TOMAS<span> LIBRARY</span></div>
-      <h1>Borrow in one scan.</h1>
-      <p>Staff scan a patron and a book. The loan, the inventory, and the next recommendation land on the receipt — no ledgers, no queues.</p>
-      <div className="recs">
-        <span className="rec">Dual-QR checkout</span>
-        <span className="rec">Live availability</span>
-        <span className="rec">Personal picks</span>
+      <span className="orb orb-a" /><span className="orb orb-b" /><span className="orb orb-c" />
+      <div className="hero-inner">
+        <img className="hero-logo" src="/STLU-Logo-PNG-1024x1536.png" alt="Santo Tomas, La Union seal" />
+        <div className="brand">STO.TOMAS<span> LIBRARY</span></div>
+        <h1>Borrow in one scan.</h1>
+        <p>Staff scan a patron and a book. The loan, the inventory, and the next recommendation land on the receipt — no ledgers, no queues.</p>
+        <div className="recs">
+          <span className="rec">Dual-QR checkout</span>
+          <span className="rec">Live availability</span>
+          <span className="rec">Personal picks</span>
+        </div>
       </div>
     </div>
     <div className="loginform">
+      <button className="iconbtn themetoggle" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? '◐' : '◑'}</button>
       <div className="card">
         <p className="eyebrow">Staff only</p>
         <h2>Sign in</h2>

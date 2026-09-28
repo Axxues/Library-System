@@ -22,7 +22,7 @@ function Search() {
 }
 function Shell({ theme, setTheme }) {
   const loc = useLocation();
-  if (loc.pathname === '/login') return <Login key="login" />;
+  if (loc.pathname === '/login') return <Login key="login" theme={theme} setTheme={setTheme} />;
   return (
     <div className="shell">
       <aside className="sidebar">
