@@ -1,9 +1,17 @@
 import { useState } from 'react';
 export default function Login({ theme, setTheme }) {
   const [f, setF] = useState({ username: '', password: '' });
+  const [err, setErr] = useState('');
   const go = async (creds = f) => {
-    const r = await (await fetch('http://localhost:4000/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(creds) })).json();
-    if (r.token) { localStorage.setItem('token', r.token); location.href = '/desk'; } else alert(r.error);
+    setErr('');
+    let r;
+    try {
+      r = await (await fetch('http://localhost:4000/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(creds) })).json();
+    } catch {
+      setErr('Cannot reach the server at localhost:4000 — start it with node server/index.js first.');
+      return;
+    }
+    if (r.token) { localStorage.setItem('token', r.token); location.href = '/desk'; } else setErr(r.error || 'Sign in failed.');
   };
   return (<div className="loginpage">
     <button className="iconbtn logintoggle" title="Toggle light / dark" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? '◐' : '◑'}</button>
@@ -35,6 +43,7 @@ export default function Login({ theme, setTheme }) {
         <div className="field"><label>Password</label><input type="password" placeholder="••••••••" onChange={(e) => setF({ ...f, password: e.target.value })} /></div>
         <button onClick={() => go()}>Sign in</button>
         <div style={{ marginTop: 8 }}><button className="secondary" onClick={() => go({ username: 'staff1', password: 'staff123' })}>Use test staff account</button></div>
+        {err && <div className="alert">{err}</div>}
       </div>
     </div>
   </div>);
