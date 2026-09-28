@@ -8,6 +8,8 @@ import Patrons from './pages/Patrons.jsx';
 import Loans from './pages/Loans.jsx';
 import Lookup from './pages/Lookup.jsx';
 import Profile from './pages/Profile.jsx';
+import Settings from './pages/Settings.jsx';
+import { api } from './api.js';
 const gated = (el) => (localStorage.getItem('token') ? el : <Navigate to="/login" />);
 const links = [
   { to: '/desk', label: 'Desk', ico: '◉' },
@@ -57,6 +59,10 @@ function Search() {
 }
 function Shell({ theme, setTheme }) {
   const loc = useLocation();
+  useEffect(() => {
+    if (loc.pathname === '/login') return;
+    api('/api/profile').then((p) => { if (p.accent) document.documentElement.style.setProperty('--primary', p.accent); }).catch(() => {});
+  }, [loc.pathname]);
   if (loc.pathname === '/login') return <Login key="login" theme={theme} setTheme={setTheme} />;
   return (
     <div className="shell">
@@ -79,6 +85,7 @@ function Shell({ theme, setTheme }) {
             <Route path="/loans" element={gated(<Loans />)} />
             <Route path="/lookup" element={<Lookup />} />
             <Route path="/profile" element={gated(<Profile />)} />
+            <Route path="/settings" element={gated(<Settings />)} />
             <Route path="*" element={<Navigate to="/desk" />} />
           </Routes>
           <div className="footer">Sto. Tomas Municipal Library · Dual-QR Circulation System</div>
