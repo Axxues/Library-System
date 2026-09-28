@@ -140,8 +140,26 @@ button.adminchip:hover { background: var(--s2); border-color: var(--line); }
   animation: pop 0.15s ease;
 }
 .usermeta { display: flex; gap: 10px; align-items: center; padding: 4px 4px 12px; border-bottom: 1px solid var(--line); margin-bottom: 12px; font-size: 14px; }
-.usermenu .danger { width: 100%; color: var(--late); background: none; border: 1px solid var(--line); }
-.usermenu .danger:hover { background: color-mix(in srgb, var(--late) 10%, transparent); border-color: var(--late); }
+.usermenu .menurow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: 0;
+  border-radius: var(--r-md);
+  padding: 9px 10px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.usermenu .menurow:hover { background: var(--s2); }
+.usermenu .menurow .ico { width: 18px; text-align: center; color: var(--subtle); }
+.usermenu .menurow.danger, .usermenu .menurow.danger .ico { color: var(--late); }
+.menudivider { border-top: 1px solid var(--line); margin: 8px 0; }
 .avatar {
   width: 32px;
   height: 32px;

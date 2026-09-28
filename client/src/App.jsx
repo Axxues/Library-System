@@ -18,7 +18,6 @@ const links = [
   { to: '/profile', label: 'Profile', ico: '◍' },
   { to: '/loans', label: 'Activity', ico: '≣' },
   { to: '/lookup', label: 'Lookup', ico: '⌕' },
-  { to: '/settings', label: 'Settings', ico: '⚙' },
 ];
 function logout() {
   localStorage.removeItem('token');
@@ -45,10 +44,11 @@ function UserChip() {
       <span className="avatar">{me.avatar ? <img src={me.avatar} alt="" /> : name[0].toUpperCase()}</span>{name}
     </button>
     {open && (<div className="usermenu" role="menu">
-      <div className="usermeta"><span className="avatar">{me.avatar ? <img src={me.avatar} alt="" /> : name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
-      <button className="secondary" onClick={() => { setOpen(false); location.href = '/profile'; }}>Profile</button>
-      <button className="secondary" onClick={() => { setOpen(false); location.href = '/settings'; }}>Settings</button>
-      <button className="secondary danger" onClick={logout}>Log out</button>
+      <div className="usermeta"><span className="avatar">{name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
+      <button className="menurow" onClick={() => { setOpen(false); location.href = '/profile'; }}><span className="ico">◍</span>Profile</button>
+      <button className="menurow" onClick={() => { setOpen(false); location.href = '/settings'; }}><span className="ico">⚙</span>Settings</button>
+      <div className="menudivider" />
+      <button className="menurow danger" onClick={logout}><span className="ico">⏻</span>Log out</button>
     </div>)}
   </span>);
 }
