@@ -222,7 +222,9 @@ const assert = require('node:assert');
   assert.ok(login.token, 'login must return token');
   const H = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + login.token };
   const out = await (await fetch(base + '/api/circulation', { method: 'POST', headers: H, body: JSON.stringify({ patronCode: 'P-0001', copyCode: 'B-COPY-003', action: 'checkout' }) })).json();
-  assert.ok(out.loan && out.recommendations.length === 5, 'checkout returns loan + 5 recs');
+  assert.ok(out.loan && out.recommendations.length === 4, 'checkout returns loan + recs');
+  // RULED 2026-09-28 (Task 3): seed holds 5 books; checked-out title is excluded
+  // from its own recs, so max 4. Grows with catalog; do not hard-code 5.
   const back = await (await fetch(base + '/api/circulation', { method: 'POST', headers: H, body: JSON.stringify({ patronCode: 'P-0001', copyCode: 'B-COPY-003', action: 'return' }) })).json();
   assert.ok(back.loan.returnAt, 'return sets returnAt');
   console.log('DEMO OK');
