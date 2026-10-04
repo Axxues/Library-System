@@ -10,10 +10,8 @@ export default function Patrons() {
   return (<div>
     <div className="crumbs">Dashboard / Members</div>
     <div className="page-head"><div className="row"><div className="grow"><h2>Members</h2><p>Registered borrowers — print each QR once for their library card.</p></div></div></div>
-    <div className="toolbar"><div className="grow"><input placeholder="Search by name or code" value={q} onChange={(e) => setQ(e.target.value)} /></div><span className="pill">{list.length} shown</span></div>
-    <div className="card"><table><thead><tr><th>Member</th><th>Code</th><th>Contact</th><th>QR</th></tr></thead><tbody>
-      {list.map((p) => <tr key={p.code}><td><span className="cellmain"><Cover title={p.name} /><span className="t">{p.name}</span></span></td><td className="mono">{p.code}</td><td>{p.contact || '—'}</td><td><a href={`http://localhost:4000/api/qr/${p.code}`} target="_blank" rel="noreferrer">QR</a></td></tr>)}
-    </tbody></table>
+    <div className="card"><div className="toolbar"><div className="grow"><input placeholder="Search by name or code" value={q} onChange={(e) => setQ(e.target.value)} /></div><span className="pill">{list.length} shown</span></div>
+    <div className="ledger">{list.map((p) => <div key={p.code} className="loanrow"><Cover title={p.name} /><span className="grow"><span className="t">{p.name}</span><br /><span className="subtle mono">{p.code} · {p.contact || '—'}</span></span><a href={`http://localhost:4000/api/qr/${p.code}`} target="_blank" rel="noreferrer">QR</a></div>)}</div>
     {list.length === 0 && <div className="empty">No members match.</div>}</div>
   </div>);
 }

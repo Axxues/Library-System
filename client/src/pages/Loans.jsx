@@ -4,22 +4,23 @@ import { api } from '../api.js';
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 export default function Loans() {
   const [rows, setRows] = useState([]); const [f, setF] = useState('');
+  const [counts, setCounts] = useState({ all: 0, active: 0, overdue: 0 });
   const load = (s) => api('/api/loans' + (s ? `?status=${s}` : '')).then((d) => { if (Array.isArray(d)) setRows(d); setF(s); }).catch(() => {});
   useEffect(() => { load(''); }, []);
+  useEffect(() => { Promise.all([api('/api/loans'), api('/api/loans?status=active'), api('/api/loans?status=overdue')]).then(([a, ac, od]) => setCounts({ all: a.length, active: ac.length, overdue: od.length })).catch(() => {}); }, []);
+  const groups = {};
+  rows.forEach((l) => { const k = fmt(l.checkoutAt); (groups[k] = groups[k] || []).push(l); });
   return (<div>
     <div className="crumbs">Dashboard / Activity</div>
     <div className="page-head"><h2>Borrowing activity</h2><p>Every checkout and return, with overdue flagged automatically.</p></div>
     <div className="card">
       <div className="toolbar">
-        <button className={'secondary' + (f === '' ? ' active' : '')} onClick={() => load('')}>All</button>
-        <button className={'secondary' + (f === 'active' ? ' active' : '')} onClick={() => load('active')}>Active</button>
-        <button className={'secondary' + (f === 'overdue' ? ' active' : '')} onClick={() => load('overdue')}>Overdue</button>
+        <button className={'secondary' + (f === '' ? ' active' : '')} onClick={() => load('')}>All ({counts.all})</button>
+        <button className={'secondary' + (f === 'active' ? ' active' : '')} onClick={() => load('active')}>Active ({counts.active})</button>
+        <button className={'secondary' + (f === 'overdue' ? ' active' : '')} onClick={() => load('overdue')}>Overdue ({counts.overdue})</button>
         <span className="pill">{rows.length} shown</span>
       </div>
-      <table><thead><tr><th>Patron</th><th>Copy</th><th>Borrow – Due</th><th>Returned</th><th>Status</th></tr></thead><tbody>
-        {rows.map((l) => <tr key={l.id}><td className="mono">{l.patronCode}</td><td className="mono">{l.copyCode}</td><td>{fmt(l.checkoutAt)} – {fmt(l.dueAt)}</td><td>{fmt(l.returnAt)}</td>
-          <td>{l.returnAt ? <span className="pill ok">Returned</span> : new Date(l.dueAt) < new Date() ? <span className="pill late">Overdue</span> : <span className="pill busy">Borrowed</span>}</td></tr>)}
-      </tbody></table>
+      <div className="ledger">{Object.entries(groups).map(([day, ls]) => <div key={day}><div className="day">{day}</div>{ls.map((l) => <div key={l.id} className="loanrow"><span className="grow"><span className="mono">{l.patronCode}</span> → {l.title || l.copyCode}<br /><span className="subtle">{fmt(l.checkoutAt)} – {fmt(l.dueAt)} · returned {fmt(l.returnAt)}</span></span>{l.returnAt ? <span className="stamp ok">Returned</span> : new Date(l.dueAt) < new Date() ? <span className="stamp late">Overdue</span> : <span className="stamp busy">Borrowed</span>}</div>)}</div>)}</div>
       {rows.length === 0 && <div className="empty">No loans in this view yet.</div>}
     </div>
   </div>);
