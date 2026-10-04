@@ -68,6 +68,7 @@ export default function Scan() {
   const back = () => { stopCams(); setErr(''); setStep((s) => Math.max(0, s - 1)); };
   const restart = () => { stopCams(); setOut(null); setErr(''); setC(''); setStep(1); };
   const cam = step === 0 ? cam1 : cam2;
+  const gated = (c) => ({ ...c, start: () => { setCamActive(true); c.start(); } });
   const due = out?.loan?.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—';
   return (<div className="scanwrap">
     <div className="crumbs">Dashboard / Scan</div>
@@ -81,12 +82,12 @@ export default function Scan() {
     </ol>
     <div className="scanlayout"><div className="scanslip">
     {step === 0 && (<div className="card"><h3>Who is borrowing?</h3><p className="desc">Scan the patron QR or type the code.</p>
-      <ScanBox label="Patron QR" code={patronCode} setCode={setP} cam={cam1} hint="P-0001" />
+      <ScanBox label="Patron QR" code={patronCode} setCode={setP} cam={gated(cam1)} hint="P-0001" />
       <div className="actions"><span className="grow" /><button onClick={next} disabled={!patronCode.trim()} type="button">Continue</button></div>
     </div>)}
     {step === 1 && (<div className="card"><h3>Which copy?</h3><p className="desc">Scan the book copy QR.</p>
-      <p className="chip">Patron <span className="mono">{patronCode}</span> <button className="linklike" onClick={() => { cam2.stop(); setStep(0); }} type="button">Change</button></p>
-      <ScanBox label="Book copy QR" code={copyCode} setCode={setC} cam={cam2} hint="B-COPY-001" />
+      <p className="chip">Patron <span className="mono">{patronCode}</span> <button className="linklike" onClick={() => { cam2.stop(); setCamActive(false); setStep(0); }} type="button">Change</button></p>
+      <ScanBox label="Book copy QR" code={copyCode} setCode={setC} cam={gated(cam2)} hint="B-COPY-001" />
       <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button onClick={next} disabled={!copyCode.trim()} type="button">Review</button></div>
     </div>)}
     {step === 2 && !out && (<div className="card"><h3>Confirm loan</h3><p className="desc">Check both codes, then choose what happens.</p>
