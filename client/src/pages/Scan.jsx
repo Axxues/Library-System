@@ -123,9 +123,8 @@ export default function Scan() {
   </div>
   {step < 2 && (
     <div className="camerastage">
-      {camActive
-        ? (<><video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden /></>)
-        : (<><p className="desc">Point the camera at the QR, or type the code.</p><button className="secondary" onClick={() => { setCamActive(true); cam.start(); }} type="button">Start camera</button></>)}
+      {!camActive && (<><p className="desc">Point the camera at the QR, or type the code.</p><button className="secondary" onClick={() => { setCamActive(true); cam.start(); }} type="button">Start camera</button></>)}
+      <video ref={cam.v} className="preview" hidden={!camActive} /><canvas ref={cam.c} hidden />
       {cam.denied && <p className="desc">Camera unavailable — type the code instead.</p>}
     </div>
   )}

@@ -73,8 +73,10 @@ h3 { font-size: 17px; font-weight: 600; }
   .sidebar { width: 68px; padding: 20px 8px; }
   .sidebar .sidelink { justify-content: center; }
   .sidebar .sidelink span.lbl, .sidebar .navlabel, .sidebar .brand span { display: none; }
+  .sidebar .brand { display: none; }
 }
 @media (max-width: 720px) {
+  .shell { flex-direction: column; }
   .sidebar { display: none; }
   .tabbar { display: flex; position: sticky; bottom: 0; z-index: 30; background: var(--s1); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
   .tabbar a { flex: 1; text-align: center; font-size: 11px; color: var(--muted); padding: 6px 2px; border-radius: 8px; }
