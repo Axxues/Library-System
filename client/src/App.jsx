@@ -21,10 +21,10 @@ const links = [
   { to: '/loans', label: 'Activity', Icon: ClipboardList },
   { to: '/lookup', label: 'Lookup', Icon: SearchIcon },
 ];
-function logout() {
+function logout(nav) {
   localStorage.removeItem('token');
   localStorage.removeItem('staff');
-  location.href = '/login';
+  if (nav) nav('/login'); else location.href = '/login';
 }
 function staff() {
   try { return JSON.parse(localStorage.getItem('staff') || '{}'); } catch { return {}; }
@@ -32,6 +32,7 @@ function staff() {
 function UserChip() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const nav = useNavigate();
   const me = staff();
   const name = me.username || 'Staff';
   useEffect(() => {
@@ -47,10 +48,10 @@ function UserChip() {
     </button>
     {open && (<div className="usermenu" role="menu">
       <div className="usermeta"><span className="avatar">{name[0].toUpperCase()}</span><span><strong>{name}</strong><br /><span className="subtle">{me.role || 'staff'}</span></span></div>
-      <button className="menurow" onClick={() => { setOpen(false); location.href = '/profile'; }}><span className="ico"><UserRound size={18} /></span>Profile</button>
-      <button className="menurow" onClick={() => { setOpen(false); location.href = '/settings'; }}><span className="ico"><SettingsIcon size={18} /></span>Settings</button>
+      <button className="menurow" onClick={() => { setOpen(false); nav('/profile'); }}><span className="ico"><UserRound size={18} /></span>Profile</button>
+      <button className="menurow" onClick={() => { setOpen(false); nav('/settings'); }}><span className="ico"><SettingsIcon size={18} /></span>Settings</button>
       <div className="menudivider" />
-      <button className="menurow danger" onClick={logout}><span className="ico"><LogOut size={18} /></span>Log out</button>
+      <button className="menurow danger" onClick={() => logout(nav)}><span className="ico"><LogOut size={18} /></span>Log out</button>
     </div>)}
   </span>);
 }
@@ -70,7 +71,8 @@ function Shell({ theme, setTheme }) {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">STO.TOMAS<span> LIBRARY</span></div>
-        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => 'sidelink' + (isActive ? ' active' : '')}><span className="ico"><l.Icon size={18} /></span>{l.label}</NavLink>)}
+        <div className="navlabel">Circulation</div>
+        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => 'sidelink' + (isActive ? ' active' : '')}><span className="ico"><l.Icon size={18} /></span><span className="lbl">{l.label}</span></NavLink>)}
       </aside>
       <div className="main">
         <header className="topbar">
@@ -93,6 +95,9 @@ function Shell({ theme, setTheme }) {
           <div className="footer">Sto. Tomas Municipal Library · Dual-QR Circulation System</div>
         </div>
       </div>
+      <nav className="tabbar" aria-label="Primary">
+        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => isActive ? 'active' : ''}><l.Icon size={20} /><div>{l.label}</div></NavLink>)}
+      </nav>
     </div>
   );
 }
