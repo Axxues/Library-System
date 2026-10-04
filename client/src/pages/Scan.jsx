@@ -49,8 +49,9 @@ export default function Scan() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [covers, setCovers] = useState([]);
-  useEffect(() => { api('/api/catalog').then((c) => setCovers(c.slice(0, 6))).catch(() => {}); }, []);
+  useEffect(() => { api('/api/catalog').then((c) => setCovers(Array.isArray(c) ? c.slice(0, 6) : [])).catch(() => {}); }, []);
   const cam1 = useCamera(setP); const cam2 = useCamera(setC);
+  useEffect(() => () => { cam1.stop(); cam2.stop(); }, []);
   const act = async (action) => {
     setBusy(true); setErr('');
     let r;
@@ -69,7 +70,7 @@ export default function Scan() {
   const back = () => { stopCams(); setErr(''); setStep((s) => Math.max(0, s - 1)); };
   const restart = () => { stopCams(); setOut(null); setErr(''); setC(''); setStep(1); };
   const cam = step === 0 ? cam1 : cam2;
-  const due = out && out.loan.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—';
+  const due = out?.loan?.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—';
   return (<div className="scanwrap">
     <div className="crumbs">Dashboard / Scan</div>
     <div className="page-head"><h2>Scan and circulate</h2><p>One scan at a time — patron first, then the book.</p></div>
@@ -83,12 +84,12 @@ export default function Scan() {
     <div className="scanlayout"><div className="scanslip">
     {step === 0 && (<div className="card"><h3>Who is borrowing?</h3><p className="desc">Scan the patron QR or type the code.</p>
       <ScanBox label="Patron QR" code={patronCode} setCode={setP} cam={cam1} hint="P-0001" />
-      <div className="actions"><span className="grow" /><button onClick={next} disabled={!patronCode.trim()}>Continue</button></div>
+      <div className="actions"><span className="grow" /><button onClick={next} disabled={!patronCode.trim()} type="button">Continue</button></div>
     </div>)}
     {step === 1 && (<div className="card"><h3>Which copy?</h3><p className="desc">Scan the book copy QR.</p>
       <p className="chip">Patron <span className="mono">{patronCode}</span> <button className="linklike" onClick={() => { cam2.stop(); setStep(0); }} type="button">Change</button></p>
       <ScanBox label="Book copy QR" code={copyCode} setCode={setC} cam={cam2} hint="B-COPY-001" />
-      <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button onClick={next} disabled={!copyCode.trim()}>Review</button></div>
+      <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button onClick={next} disabled={!copyCode.trim()} type="button">Review</button></div>
     </div>)}
     {step === 2 && !out && (<div className="card"><h3>Confirm loan</h3><p className="desc">Check both codes, then choose what happens.</p>
       <dl className="kv">
@@ -96,19 +97,19 @@ export default function Scan() {
         <dt>Copy</dt><dd className="mono">{copyCode}</dd>
       </dl>
       {err && <p className="formerr" role="alert">{err}</p>}
-      <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button className="secondary" onClick={() => act('return')} disabled={busy} type="button">Return</button><button onClick={() => act('checkout')} disabled={busy}>{busy ? 'Working…' : 'Checkout'}</button></div>
+      <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button className="secondary" onClick={() => act('return')} disabled={busy} type="button">Return</button><button onClick={() => act('checkout')} disabled={busy} type="button">{busy ? 'Working…' : 'Checkout'}</button></div>
     </div>)}
     {step === 2 && out && (<div className="card"><h3>{out.action === 'return' ? 'Returned' : 'Checked out'}</h3>
-      <div className="receipt-meta"><span className="pill busy">{out.ms}ms</span><span className="subtle mono">{out.loan.checkoutAt ? new Date(out.loan.checkoutAt).toLocaleString() : ''}</span></div>
+       <div className="receipt-meta"><span className="pill busy">{out.ms}ms</span><span className="subtle mono">{out?.loan?.checkoutAt ? new Date(out.loan.checkoutAt).toLocaleString() : ''}</span></div>
       <dl className="kv">
         <dt>Patron</dt><dd className="mono">{patronCode}</dd>
         <dt>Copy</dt><dd className="mono">{copyCode}</dd>
-        <dt>Due</dt><dd>{out.loan.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—'}</dd>
-        <dt>Returned</dt><dd>{out.loan.returnAt ? new Date(out.loan.returnAt).toLocaleString() : 'On loan'}</dd>
+        <dt>Due</dt><dd>{out?.loan?.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—'}</dd>
+        <dt>Returned</dt><dd>{out?.loan?.returnAt ? new Date(out.loan.returnAt).toLocaleString() : 'On loan'}</dd>
       </dl>
       <p className="eyebrow">Recommended for this reader</p>
-      <div className="recs">{out.recommendations.map((r) => <span key={r.id} className="rec">{r.title}</span>)}</div>
-      <div className="actions"><button className="secondary" onClick={() => window.print()} type="button">Print receipt</button><span className="grow" /><button onClick={restart}>Scan next book</button></div>
+      <div className="recs">{Array.isArray(out?.recommendations) ? out.recommendations.map((r) => <span key={r.id} className="rec">{r.title}</span>) : null}</div>
+      <div className="actions"><button className="secondary" onClick={() => window.print()} type="button">Print receipt</button><span className="grow" /><button onClick={restart} type="button">Scan next book</button></div>
     </div>)}
     </div><aside className="scanvisual"><div className="camerastage">
       {step < 2 && (<>

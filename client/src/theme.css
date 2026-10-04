@@ -328,7 +328,6 @@ video.preview { width: 200px; border-radius: var(--r-md); border: 1px solid var(
 .loanrow { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
 .loanrow .grow { flex: 1; }
 /* ponytail: scan wizard — one slip, no new palette. */
-.scanwrap { max-width: 620px; }
 .scanwrap .card { margin-top: 12px; }
 .actions .grow { flex: 1; }
 .scansteps { display: flex; gap: 8px; list-style: none; padding: 0; margin: 0 0 4px; }
