@@ -98,7 +98,7 @@ export default function Scan() {
       {err && <p className="formerr" role="alert">{err}</p>}
       <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button className="secondary" onClick={() => act('return')} disabled={busy} type="button">Return</button><button onClick={() => act('checkout')} disabled={busy} type="button">{busy ? 'Working…' : 'Checkout'}</button></div>
     </div>)}
-    {step === 2 && out && (<div className="card"><h3>{out.action === 'return' ? 'Returned' : 'Checked out'}</h3>
+    {step === 2 && out && (<div className="card ticket"><h3>{out.action === 'return' ? 'Returned' : 'Checked out'}</h3>
        <div className="receipt-meta"><span className="pill busy">{out.ms}ms</span><span className="subtle mono">{out?.loan?.checkoutAt ? new Date(out.loan.checkoutAt).toLocaleString() : ''}</span></div>
       <dl className="kv">
         <dt>Patron</dt><dd className="mono">{patronCode}</dd>

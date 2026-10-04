@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeftRight, LibraryBig, TriangleAlert } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { Cover } from '../cover.jsx';
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
@@ -14,6 +14,7 @@ function last8() {
   return out;
 }
 export default function Desk() {
+  const nav = useNavigate();
   const [stats, setStats] = useState({ books: '—', active: '—', overdue: '—' });
   const [recent, setRecent] = useState([]);
   const [trend, setTrend] = useState([]);
@@ -51,9 +52,9 @@ export default function Desk() {
   }, []);
   const max = Math.max(1, ...trend.map((t) => t.n));
   const tiles = [
-    { Icon: LibraryBig, bg: '#5e6ad2', num: stats.books, lbl: 'Titles in catalog', tip: `${stats.avail ?? '—'} of ${stats.copies ?? '—'} copies on shelf` },
-    { Icon: ArrowLeftRight, bg: '#f97316', num: stats.active, lbl: 'Currently borrowed', tip: insights.title !== '—' ? `Most borrowed: ${insights.title}` : 'No checkouts yet' },
-    { Icon: TriangleAlert, bg: '#dc2626', num: stats.overdue, lbl: 'Overdue books', tip: `${stats.odPatrons ?? '—'} patron(s) holding overdue` },
+    { num: stats.books, lbl: 'Titles in catalog', tip: `${stats.avail ?? '—'} of ${stats.copies ?? '—'} copies on shelf` },
+    { num: stats.active, lbl: 'Currently borrowed', tip: insights.title !== '—' ? `Most borrowed: ${insights.title}` : 'No checkouts yet' },
+    { num: stats.overdue, lbl: 'Overdue books', tip: `${stats.odPatrons ?? '—'} patron(s) holding overdue` },
   ];
   const notes = [
     { t: 'Top genre', v: insights.genre },
@@ -62,11 +63,11 @@ export default function Desk() {
   ];
   return (<div>
     <div className="crumbs">Dashboard</div>
-    <div className="page-head"><div className="row"><div className="grow"><h2>Front desk</h2><p>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} — the library at a glance.</p></div><button onClick={() => { location.href = '/scan'; }}>Go to scan</button></div></div>
+    <div className="masthead"><div className="grow"><h2>Front desk</h2><p>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} — the library at a glance.</p></div><button onClick={() => nav('/scan')}>Go to scan</button></div>
     <div className="dash">
       <div className="dash-main">
         <div className="grid three">
-          {tiles.map((s) => <div key={s.lbl} className="card stat" data-tip={s.tip} tabIndex={0}><span className="tile" style={{ background: s.bg, color: '#fff' }}><s.Icon size={22} /></span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
+          {tiles.map((s) => <div key={s.lbl} className="card" data-tip={s.tip} tabIndex={0}><span className="num">{s.num}</span><span className="lbl">{s.lbl}</span></div>)}
         </div>
         <div className="card"><div className="row"><div className="grow"><h3>Borrowing trend</h3><p className="desc">Checkouts per month, last 8 months.</p></div></div>
           <div className="bars">{trend.map((t) => <div key={t.key} className="barcol" data-tip={`${t.label} — ${t.n} checkout${t.n === 1 ? '' : 's'}`} tabIndex={0}><div className="bar" style={{ height: `${Math.max(6, (t.n / max) * 120)}px` }} /><span>{t.label}</span></div>)}</div>
@@ -77,7 +78,7 @@ export default function Desk() {
         <div className="card"><h3>Latest activity</h3><p className="desc">Five most recent loans.</p>
           <table><thead><tr><th>Patron</th><th>Book</th><th>Checked out</th><th>Status</th></tr></thead><tbody>
             {recent.map((l) => <tr key={l.id}><td className="mono">{l.patronCode}</td><td><span className="cellmain"><Cover title={l.title} /><span className="t">{l.title || l.copyCode}</span></span></td><td>{fmt(l.checkoutAt)}</td>
-              <td>{l.returnAt ? <span className="pill ok">Returned</span> : <span className="pill busy">On loan</span>}</td></tr>)}
+              <td>{l.returnAt ? <span className="stamp ok">Returned</span> : <span className="stamp busy">On loan</span>}</td></tr>)}
           </tbody></table>
           {recent.length === 0 && <div className="empty">No loans yet.</div>}
         </div>
@@ -85,11 +86,11 @@ export default function Desk() {
       <div className="dash-side">
         <div className="card"><h3>Overdue</h3><p className="desc">Needs a follow-up call.</p>
           {overdue.length === 0 && <p className="desc">Nothing overdue. Quiet shelves.</p>}
-          {overdue.map((l) => <div key={l.id} className="loanrow"><Cover title={l.title} /><span className="grow">{l.title}<br /><span className="subtle mono">{l.patronCode} · due {fmt(l.dueAt)}</span></span><span className="pill late">Late</span></div>)}
+          {overdue.map((l) => <div key={l.id} className="loanrow"><Cover title={l.title} /><span className="grow">{l.title}<br /><span className="subtle mono">{l.patronCode} · due {fmt(l.dueAt)}</span></span><span className="stamp late">Late</span></div>)}
         </div>
         <div className="card"><h3>Popular now</h3><p className="desc">Most borrowed titles of all time.</p>
           {popular.length === 0 && <p className="desc">No circulation yet.</p>}
-          {popular.map((p) => <div key={p.title} className="loanrow"><Cover title={p.title} /><span className="grow">{p.title}</span><span className="pill busy">{p.n}×</span></div>)}
+          {popular.map((p, i) => <div key={p.title} className="loanrow"><span className="num">{i + 1}</span><Cover title={p.title} size="lg" /><span className="grow">{p.title}</span><span className="stamp busy">{p.n}×</span></div>)}
         </div>
       </div>
     </div>
