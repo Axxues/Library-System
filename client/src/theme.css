@@ -468,3 +468,7 @@ body, .sidebar, .topbar, .scanbox { transition: background-color 0.25s ease, bor
 .camerastage { background: var(--s1); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow); }
 .camerastage video.preview { width: 100%; }
 @media (max-width: 900px) { .scanlayout { grid-template-columns: 1fr; } }
+.coverwall { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.coverwall .covertitle { font-size: 11px; color: var(--subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ponytail: zero min-width so nowrap titles ellipsis instead of scrolling at 360px. */
+.coverwall > div { min-width: 0; }

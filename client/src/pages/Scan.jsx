@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
 import { api } from '../api.js';
+import { Cover } from '../cover.jsx';
 function useCamera(set) {
   const v = useRef(null); const c = useRef(null);
   const [denied, setDenied] = useState(false);
@@ -47,6 +48,8 @@ export default function Scan() {
   const [out, setOut] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [covers, setCovers] = useState([]);
+  useEffect(() => { api('/api/catalog').then((c) => setCovers(c.slice(0, 6))).catch(() => {}); }, []);
   const cam1 = useCamera(setP); const cam2 = useCamera(setC);
   const act = async (action) => {
     setBusy(true); setErr('');
@@ -122,6 +125,9 @@ export default function Scan() {
           <dt>Copy</dt><dd className="mono">{copyCode || '—'}</dd>
           <dt>Due</dt><dd>{due}</dd>
         </dl>)}
+    </div><div className="coverwall">
+      {covers.map((b) => (<div key={b.id}><Cover title={b.title} /><div className="covertitle">{b.title}</div></div>))}
+      {covers.length === 0 && <p className="desc">Scan a patron to begin.</p>}
     </div></aside></div>
   </div>);
 }
