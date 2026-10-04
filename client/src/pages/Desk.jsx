@@ -65,13 +65,13 @@ export default function Desk() {
     <div className="page-head"><div className="row"><div className="grow"><h2>Front desk</h2><p>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} — the library at a glance.</p></div><button onClick={() => { location.href = '/scan'; }}>Go to scan</button></div></div>
     <div className="dash">
       <div className="dash-main">
-        <div className="grid three" style={{ marginBottom: 16 }}>
+        <div className="grid three">
           {tiles.map((s) => <div key={s.lbl} className="card stat" data-tip={s.tip} tabIndex={0}><span className="tile" style={{ background: s.bg, color: '#fff' }}><s.Icon size={22} /></span><span><span className="num">{s.num}</span><br /><span className="lbl">{s.lbl}</span></span></div>)}
         </div>
-        <div className="card" style={{ marginBottom: 16 }}><div className="row"><div className="grow"><h3>Borrowing trend</h3><p className="desc">Checkouts per month, last 8 months.</p></div></div>
+        <div className="card"><div className="row"><div className="grow"><h3>Borrowing trend</h3><p className="desc">Checkouts per month, last 8 months.</p></div></div>
           <div className="bars">{trend.map((t) => <div key={t.key} className="barcol" data-tip={`${t.label} — ${t.n} checkout${t.n === 1 ? '' : 's'}`} tabIndex={0}><div className="bar" style={{ height: `${Math.max(6, (t.n / max) * 120)}px` }} /><span>{t.label}</span></div>)}</div>
         </div>
-        <div className="grid three" style={{ marginBottom: 16 }}>
+        <div className="grid three">
           {notes.map((n) => <div key={n.t} className="card"><p className="eyebrow">{n.t}</p><h3 style={{ margin: 0 }}>{n.v}</h3></div>)}
         </div>
         <div className="card"><h3>Latest activity</h3><p className="desc">Five most recent loans.</p>
@@ -79,11 +79,11 @@ export default function Desk() {
             {recent.map((l) => <tr key={l.id}><td className="mono">{l.patronCode}</td><td><span className="cellmain"><Cover title={l.title} /><span className="t">{l.title || l.copyCode}</span></span></td><td>{fmt(l.checkoutAt)}</td>
               <td>{l.returnAt ? <span className="pill ok">Returned</span> : <span className="pill busy">On loan</span>}</td></tr>)}
           </tbody></table>
-          {recent.length === 0 && <p className="desc" style={{ marginTop: 12 }}>No loans yet.</p>}
+          {recent.length === 0 && <div className="empty">No loans yet.</div>}
         </div>
       </div>
       <div className="dash-side">
-        <div className="card" style={{ marginBottom: 16 }}><h3>Overdue</h3><p className="desc">Needs a follow-up call.</p>
+        <div className="card"><h3>Overdue</h3><p className="desc">Needs a follow-up call.</p>
           {overdue.length === 0 && <p className="desc">Nothing overdue. Quiet shelves.</p>}
           {overdue.map((l) => <div key={l.id} className="loanrow"><Cover title={l.title} /><span className="grow">{l.title}<br /><span className="subtle mono">{l.patronCode} · due {fmt(l.dueAt)}</span></span><span className="pill late">Late</span></div>)}
         </div>
