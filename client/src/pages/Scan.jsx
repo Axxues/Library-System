@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
 import { api } from '../api.js';
-import { Cover } from '../cover.jsx';
 function useCamera(set) {
   const v = useRef(null); const c = useRef(null);
   const [denied, setDenied] = useState(false);
@@ -43,13 +42,12 @@ function ScanBox({ label, code, setCode, cam, hint }) {
 const STEPS = ['Patron', 'Book', 'Confirm'];
 export default function Scan() {
   const [step, setStep] = useState(0);
+  const [camActive, setCamActive] = useState(false);
   const [patronCode, setP] = useState('P-0001');
   const [copyCode, setC] = useState('B-COPY-001');
   const [out, setOut] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
-  const [covers, setCovers] = useState([]);
-  useEffect(() => { api('/api/catalog').then((c) => setCovers(Array.isArray(c) ? c.slice(0, 6) : [])).catch(() => {}); }, []);
   const cam1 = useCamera(setP); const cam2 = useCamera(setC);
   useEffect(() => () => { cam1.stop(); cam2.stop(); }, []);
   const act = async (action) => {
@@ -65,7 +63,7 @@ export default function Scan() {
     setBusy(false);
     if (r.error) setErr(r.error); else setOut({ ...r, action });
   };
-  const stopCams = () => { cam1.stop(); cam2.stop(); };
+  const stopCams = () => { cam1.stop(); cam2.stop(); setCamActive(false); };
   const next = () => { stopCams(); setOut(null); setErr(''); setStep((s) => Math.min(2, s + 1)); };
   const back = () => { stopCams(); setErr(''); setStep((s) => Math.max(0, s - 1)); };
   const restart = () => { stopCams(); setOut(null); setErr(''); setC(''); setStep(1); };
@@ -111,24 +109,25 @@ export default function Scan() {
       <div className="recs">{Array.isArray(out?.recommendations) ? out.recommendations.map((r) => <span key={r.id} className="rec">{r.title}</span>) : null}</div>
       <div className="actions"><button className="secondary" onClick={() => window.print()} type="button">Print receipt</button><span className="grow" /><button onClick={restart} type="button">Scan next book</button></div>
     </div>)}
-    </div><aside className="scanvisual"><div className="camerastage">
-      {step < 2 && (<>
-        <video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden />
-        {cam.denied
-          ? <p className="desc">Camera unavailable — type the code instead.</p>
-          : <p className="desc">Point the camera at the QR, or type the code.</p>}
-      </>)}
-      <p className="eyebrow">Reading now</p>
-      {!patronCode.trim()
-        ? <p className="desc">Scan a patron to begin.</p>
-        : (<dl className="kv">
-          <dt>Patron</dt><dd className="mono">{patronCode}</dd>
-          <dt>Copy</dt><dd className="mono">{copyCode || '—'}</dd>
-          <dt>Due</dt><dd>{due}</dd>
-        </dl>)}
-    </div><div className="coverwall">
-      {covers.map((b) => (<div key={b.id}><Cover title={b.title} /><div className="covertitle">{b.title}</div></div>))}
-      {covers.length === 0 && <p className="desc">Scan a patron to begin.</p>}
-    </div></aside></div>
+    </div><aside className="scanvisual">
+  <div className="card statuscard">
+    <p className="eyebrow">Reading now</p>
+    {!patronCode.trim()
+      ? <p className="desc">Scan a patron to begin.</p>
+      : (<dl className="kv">
+        <dt>Patron</dt><dd className="mono">{patronCode}</dd>
+        <dt>Copy</dt><dd className="mono">{copyCode || '—'}</dd>
+        <dt>Due</dt><dd>{due}</dd>
+      </dl>)}
+  </div>
+  {step < 2 && (
+    <div className="camerastage">
+      {camActive
+        ? (<><video ref={cam.v} className="preview" /><canvas ref={cam.c} hidden /></>)
+        : (<><p className="desc">Point the camera at the QR, or type the code.</p><button className="secondary" onClick={() => { setCamActive(true); cam.start(); }} type="button">Start camera</button></>)}
+      {cam.denied && <p className="desc">Camera unavailable — type the code instead.</p>}
+    </div>
+  )}
+</aside></div>
   </div>);
 }
