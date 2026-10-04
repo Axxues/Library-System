@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
-const swatches = ['#f97316', '#5e6ad2', '#16a34a', '#0284c7'];
+const swatches = ['#175E3C', '#f97316', '#5e6ad2', '#0284c7'];
 export default function Settings() {
   const [accent, setAccent] = useState(localStorage.getItem('accent') || '');
   const [msg, setMsg] = useState('');
@@ -58,7 +58,7 @@ export default function Settings() {
       <div className="card"><h3>Appearance</h3><p className="desc">System accent. Applies instantly.</p>
         <div className="row" style={{ marginBottom: 12 }}>
           {swatches.map((s) => <button key={s} title={s} onClick={() => apply(s)} style={{ width: 36, height: 36, borderRadius: '50%', padding: 0, background: s, border: accent === s ? '3px solid var(--ink)' : '1px solid var(--line)' }} />)}
-          <input type="color" value={accent || '#f97316'} onChange={(e) => apply(e.target.value)} style={{ width: 44, height: 36, padding: 2 }} />
+          <input type="color" value={accent || '#175E3C'} onChange={(e) => apply(e.target.value)} style={{ width: 44, height: 36, padding: 2 }} />
         </div>
         <div className="actions"><button onClick={saveAccent}>Save appearance</button><button className="secondary" onClick={async () => { apply(''); localStorage.removeItem('accent'); try { await api('/api/settings/accent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accent: null }) }); } catch {} }}>Reset</button></div>
       </div>

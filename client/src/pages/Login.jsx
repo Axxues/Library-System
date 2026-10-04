@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { Cover } from '../cover.jsx';
 export default function Login({ theme, setTheme }) {
   const [f, setF] = useState({ username: '', password: '' });
   const [err, setErr] = useState('');
@@ -44,6 +45,7 @@ export default function Login({ theme, setTheme }) {
           <span className="rec">Live availability</span>
           <span className="rec">Personal picks</span>
         </div>
+        <div className="shelf" style={{marginTop:20}}>{['Dune', 'The Hobbit', 'Clean Code', 'El Filibusterismo'].map((t) => <div key={t} className="shelfcard" style={{background:'rgba(255,255,255,.12)',borderColor:'rgba(255,255,255,.35)'}}><Cover title={t} size="lg" /><span className="t" style={{color:'#fff'}}>{t}</span></div>)}</div>
       </div>
     </div>
     <div className="loginform">

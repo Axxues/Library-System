@@ -19,12 +19,12 @@ export default function Lookup() {
       {out && out.error && <div className="alert">{out.error}</div>}
     </div>
     {out && !out.error && (<div className="grid two">
-      <div className="card"><h3>{out.patron.name}</h3><p className="desc mono">{out.patron.code}</p>
+      <div className="card"><div className="loanrow"><Cover title={out.patron.name} size="lg" /><span className="grow"><h3 style={{margin:0}}>{out.patron.name}</h3><span className="subtle mono">{out.patron.code}</span></span></div>
         {out.activeLoans.length === 0 && <p className="desc">No books on loan right now.</p>}
-        {out.activeLoans.map((l) => <div key={l.id} className="loanrow"><Cover title={l.title} /><span className="grow">{l.title}</span><span className="pill busy">Due {l.dueAt ? new Date(l.dueAt).toLocaleDateString() : '—'}</span></div>)}
+        {out.activeLoans.map((l) => <div key={l.id} className="loanrow"><Cover title={l.title} /><span className="grow">{l.title}</span><span className="stamp busy">Due {l.dueAt ? new Date(l.dueAt).toLocaleDateString() : '—'}</span></div>)}
       </div>
       <div className="card"><h3>Picked for you</h3><p className="desc">Based on what you and similar readers borrow.</p>
-        <div className="recs">{out.recommendations.map((r) => <span key={r.id} className="rec">{r.title}</span>)}</div>
+        <div className="shelf">{out.recommendations.map((r) => <div key={r.id} className="shelfcard"><Cover title={r.title} size="lg" /><span className="t">{r.title}</span></div>)}</div>
       </div>
     </div>)}
   </div>);

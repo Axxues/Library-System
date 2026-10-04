@@ -74,7 +74,7 @@ export default function Profile() {
         <div className="field"><label>Postal code</label><input value={form.addrPostal} onChange={set('addrPostal')} /></div>
       </div>
       <div className="actions"><button onClick={save}>Save profile</button></div>
-      {msg && <div className="alert" style={{ borderColor: msg === 'Saved.' ? 'var(--success)' : undefined, color: msg === 'Saved.' ? 'var(--success)' : undefined }}>{msg}</div>}
+      {msg && (msg === 'Saved.' ? <span className="stamp ok">Saved</span> : <div className="alert" style={{ borderColor: msg === 'Saved.' ? 'var(--success)' : undefined, color: msg === 'Saved.' ? 'var(--success)' : undefined }}>{msg}</div>)}
     </div>
   </div>);
 }
