@@ -4,6 +4,10 @@ import { api } from '../api.js';
 function useCamera(set) {
   const v = useRef(null); const c = useRef(null);
   const [denied, setDenied] = useState(false);
+  const stop = () => {
+    const el = v.current;
+    if (el && el.srcObject) { el.srcObject.getTracks().forEach((t) => t.stop()); el.srcObject = null; }
+  };
   const start = async () => {
     setDenied(false);
     let s;
@@ -16,16 +20,16 @@ function useCamera(set) {
     v.current.srcObject = s;
     await v.current.play();
     const tick = () => {
-      const cv = c.current; if (!cv) return;
-      cv.width = v.current.videoWidth; cv.height = v.current.videoHeight;
-      const ctx = cv.getContext('2d'); ctx.drawImage(v.current, 0, 0);
+      const cv = c.current; const el = v.current; if (!cv || !el || !el.srcObject) return;
+      cv.width = el.videoWidth; cv.height = el.videoHeight;
+      const ctx = cv.getContext('2d'); ctx.drawImage(el, 0, 0);
       const d = ctx.getImageData(0, 0, cv.width, cv.height);
       const q = jsQR(d.data, cv.width, cv.height);
-      if (q) { set(q.data); s.getTracks().forEach((t) => t.stop()); } else requestAnimationFrame(tick);
+      if (q) { set(q.data); stop(); } else requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   };
-  return { v, c, start, denied };
+  return { v, c, start, stop, denied };
 }
 function ScanBox({ label, code, setCode, cam, hint }) {
   return (<div className="scanbox">
@@ -57,9 +61,10 @@ export default function Scan() {
     setBusy(false);
     if (r.error) setErr(r.error); else setOut({ ...r, action });
   };
-  const next = () => { setOut(null); setErr(''); setStep((s) => Math.min(2, s + 1)); };
-  const back = () => { setErr(''); setStep((s) => Math.max(0, s - 1)); };
-  const restart = () => { setOut(null); setErr(''); setC(''); setStep(1); };
+  const stopCams = () => { cam1.stop(); cam2.stop(); };
+  const next = () => { stopCams(); setOut(null); setErr(''); setStep((s) => Math.min(2, s + 1)); };
+  const back = () => { stopCams(); setErr(''); setStep((s) => Math.max(0, s - 1)); };
+  const restart = () => { stopCams(); setOut(null); setErr(''); setC(''); setStep(1); };
   const cam = step === 0 ? cam1 : cam2;
   const due = out && out.loan.dueAt ? new Date(out.loan.dueAt).toLocaleDateString() : '—';
   return (<div className="scanwrap">
@@ -78,7 +83,7 @@ export default function Scan() {
       <div className="actions"><span className="grow" /><button onClick={next} disabled={!patronCode.trim()}>Continue</button></div>
     </div>)}
     {step === 1 && (<div className="card"><h3>Which copy?</h3><p className="desc">Scan the book copy QR.</p>
-      <p className="chip">Patron <span className="mono">{patronCode}</span> <button className="linklike" onClick={() => setStep(0)} type="button">Change</button></p>
+      <p className="chip">Patron <span className="mono">{patronCode}</span> <button className="linklike" onClick={() => { cam2.stop(); setStep(0); }} type="button">Change</button></p>
       <ScanBox label="Book copy QR" code={copyCode} setCode={setC} cam={cam2} hint="B-COPY-001" />
       <div className="actions"><button className="secondary" onClick={back} type="button">Back</button><span className="grow" /><button onClick={next} disabled={!copyCode.trim()}>Review</button></div>
     </div>)}
