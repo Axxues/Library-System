@@ -461,3 +461,10 @@ body, .sidebar, .topbar, .scanbox { transition: background-color 0.25s ease, bor
   .sidebar, .topbar, .actions, button { display: none; }
   body { background: #fff; color: #000; }
 }
+/* ponytail: scan two-column slip + camera stage; stacks below 900px. */
+.scanlayout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; align-items: start; }
+.scanwrap { max-width: 1000px; }
+.scanvisual { display: flex; flex-direction: column; gap: 16px; }
+.camerastage { background: var(--s1); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow); }
+.camerastage video.preview { width: 100%; }
+@media (max-width: 900px) { .scanlayout { grid-template-columns: 1fr; } }
