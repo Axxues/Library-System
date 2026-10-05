@@ -25,6 +25,7 @@ import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { MetricCard } from '../components/ui/metric-card.jsx';
 import { EmptyState } from '../components/ui/empty-state.jsx';
+import { Skeleton, SkeletonCover, SkeletonCircle } from '../components/ui/skeleton.jsx';
 import {
   Table,
   TableHeader,
@@ -47,8 +48,102 @@ function last8() {
   return out;
 }
 
+function DeskSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* 4-Metric Executive Strip Skeleton */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-3xl border border-border/70 bg-card p-5 shadow-card space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-28 rounded-lg" />
+              <Skeleton className="h-10 w-10 rounded-2xl" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-20 rounded-lg" />
+              <Skeleton className="h-3 w-36 rounded-md" />
+            </div>
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between">
+                <Skeleton className="h-3 w-16 rounded" />
+                <Skeleton className="h-3 w-8 rounded" />
+              </div>
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Monthly Throughput Bar Chart Skeleton */}
+      <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-6">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-48 rounded-lg" />
+            <Skeleton className="h-3.5 w-64 rounded-md" />
+          </div>
+          <Skeleton className="h-7 w-32 rounded-xl" />
+        </div>
+        <div className="pt-4 grid grid-cols-8 gap-3 items-end h-44 border-b border-border/40 pb-4">
+          {[35, 60, 45, 80, 50, 95, 70, 85].map((h, i) => (
+            <div key={i} className="flex flex-col items-center gap-2 h-full justify-end">
+              <Skeleton className="w-full rounded-xl" style={{ height: `${h}%` }} />
+              <Skeleton className="h-3 w-8 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Split Workbench Skeleton */}
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-4">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3">
+            <Skeleton className="h-5 w-44 rounded-lg" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
+          <div className="space-y-3 pt-1">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between rounded-2xl border border-border/60 p-3 bg-muted/20">
+                <div className="flex items-center gap-3">
+                  <SkeletonCover size="sm" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-36 rounded" />
+                    <Skeleton className="h-3 w-28 rounded" />
+                  </div>
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-4">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3">
+            <Skeleton className="h-5 w-40 rounded-lg" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+          <div className="space-y-3 pt-1">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between rounded-2xl border border-border/60 p-3 bg-muted/20">
+                <div className="flex items-center gap-3">
+                  <SkeletonCover size="sm" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32 rounded" />
+                    <Skeleton className="h-3 w-20 rounded" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-20 rounded-xl" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Desk() {
   const nav = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ books: '—', active: '—', overdue: '—', copies: 0, avail: 0, odPatrons: 0 });
   const [recent, setRecent] = useState([]);
   const [trend, setTrend] = useState([]);
@@ -113,7 +208,8 @@ export default function Desk() {
             .map(([title, n]) => ({ title, n }))
         );
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -191,8 +287,12 @@ export default function Desk() {
         </div>
       </div>
 
-      {/* 4-Metric Executive Strip */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {loading ? (
+        <DeskSkeleton />
+      ) : (
+        <>
+          {/* 4-Metric Executive Strip */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Catalog Titles"
           value={stats.books}
@@ -507,6 +607,8 @@ export default function Desk() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
