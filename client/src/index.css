@@ -1,0 +1,493 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core colors */
+    --background: 220 14% 97.5%;
+    --foreground: 222.2 84% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 5%;
+    --card-hover: 220 14% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 5%;
+
+    /* Surface — one step above background for panels/nested content */
+    --surface: 0 0% 100%;
+
+    /* Primary — vibrant blue, crisp and modern */
+    --primary: 221 83% 55%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Muted */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Accent */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Destructive — shifted to red */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Semantic status colors */
+    --success: 142 71% 30%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Sidebar tokens */
+    --sidebar-bg: 0 0% 100%;
+    --sidebar-hover: 210 40% 96.1%;
+    --sidebar-active: 221 83% 55%;
+    --sidebar-foreground: 222.2 84% 5%;
+
+    /* Border & ring */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 55%;
+
+    /* Radius scale — increased for more rounded, modern feel */
+    --radius: 0.625rem;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+  }
+
+  .dark {
+    /* Premium deep slate dark mode */
+    --background: 220 29% 10%;
+    --foreground: 210 40% 96%;
+    --card: 220 29% 12%;
+    --card-foreground: 210 40% 96%;
+    --card-hover: 217 19% 18%;
+    --popover: 220 29% 12%;
+    --popover-foreground: 210 40% 96%;
+
+    /* Surface — one step above background */
+    --surface: 220 29% 14%;
+
+    /* Primary — brighter blue for dark backgrounds */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 96%;
+
+    /* Destructive — red */
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Semantic */
+    --success: 142 70% 30%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 55%;
+    --info-foreground: 0 0% 100%;
+
+    /* Sidebar dark tokens */
+    --sidebar-bg: 220 29% 10%;
+    --sidebar-hover: 217.2 32.6% 17.5%;
+    --sidebar-active: 217 91% 60%;
+    --sidebar-foreground: 210 40% 96%;
+
+    /* Subtle border */
+    --border: 217 19% 20%;
+    --input: 217 19% 20%;
+    --ring: 217 91% 60%;
+  }
+}
+
+/* =============================================
+   BASE STYLES
+   ============================================= */
+
+@layer base {
+  * {
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.4);
+    border-radius: 9999px;
+    border: 1.5px solid transparent;
+    background-clip: content-box;
+    min-height: 32px;
+    transition: background-color 0.2s;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background-color: hsl(var(--primary) / 0.6);
+  }
+
+  /* Firefox dark mode scrollbar — slightly lighter thumb for visibility */
+  .dark * {
+    scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.5);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Premium focus ring */
+  *:focus-visible {
+    outline: none;
+  }
+}
+
+/* =============================================
+   TYPOGRAPHY UTILITIES
+   ============================================= */
+
+@layer utilities {
+  /* Heading scale */
+  .heading-1 {
+    @apply text-4xl font-black leading-tight tracking-tight;
+    font-size: 2.5rem;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+
+  .heading-2 {
+    @apply text-3xl font-bold leading-snug tracking-tight;
+    font-size: 2rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .heading-3 {
+    @apply text-2xl font-bold leading-snug;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  .heading-4 {
+    @apply text-xl font-semibold leading-snug;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+
+  /* Body scale */
+  .body-large {
+    @apply text-base leading-relaxed;
+  }
+
+  .body {
+    @apply text-sm leading-relaxed;
+  }
+
+  .body-small {
+    @apply text-xs leading-relaxed;
+  }
+
+  /* Label & caption */
+  .label {
+    @apply text-xs font-semibold tracking-wide uppercase;
+  }
+
+  .caption {
+    @apply text-xs text-muted-foreground leading-relaxed;
+  }
+
+  .gradient-text {
+    @apply text-primary;
+  }
+
+  .bg-gradient-subtle {
+    background: hsl(var(--muted));
+  }
+
+  .bg-gradient-primary {
+    background: hsl(var(--primary));
+  }
+
+  /* Glass morphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .dark .glass {
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  /* Noise texture overlay */
+  .noise-overlay {
+    position: relative;
+  }
+
+  .noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* Card interactive hover */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+    border-color: hsl(var(--primary) / 0.4);
+  }
+
+  /* Shimmer skeleton background */
+  .shimmer {
+    background: hsl(var(--muted));
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  /* Stagger animation delays */
+  .stagger-1 { animation-delay: 100ms; }
+  .stagger-2 { animation-delay: 200ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 400ms; }
+  .stagger-5 { animation-delay: 500ms; }
+  .stagger-6 { animation-delay: 600ms; }
+
+  /* Live indicator dot */
+  .live-dot {
+    @apply relative inline-flex h-2 w-2;
+  }
+
+  .live-dot::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-success;
+    animation: pulseRing 1.5s infinite ease-out;
+  }
+
+  /* Subtle glow on interactive */
+  .glow-on-hover:hover {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+  }
+
+  /* Backdrop overlay for modals/dialogs — increased blur for premium feel */
+  .overlay-backdrop {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .dark .overlay-backdrop {
+    background: rgba(0, 0, 0, 0.75);
+  }
+}
+
+/* =============================================
+   KEYFRAME ANIMATIONS
+   ============================================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  80%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* Animation utility classes */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* Surface utility — one step above background */
+.bg-surface {
+  background-color: hsl(var(--surface));
+}
+
+/* =============================================
+   TABLE & LAYOUT UTILITIES
+   ============================================= */
+
+table, thead, tbody, tr, td {
+  overflow: visible !important;
+}
+
+/* =============================================
+   DIALOG SIZING
+   ============================================= */
+
+.custom-dialog-fixed-lg {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+@media (min-width: 768px) {
+  .custom-dialog-fixed-lg {
+    width: 90% !important;
+    max-width: 90% !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .custom-dialog-fixed-lg {
+    width: 1152px !important;
+    max-width: 1152px !important;
+  }
+}
+
+.custom-dialog-fixed-xl {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+@media (min-width: 768px) {
+  .custom-dialog-fixed-xl {
+    width: 96% !important;
+    max-width: 96% !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .custom-dialog-fixed-xl {
+    width: min(1600px, 96vw) !important;
+    max-width: min(1600px, 96vw) !important;
+  }
+}
+
+/* =============================================
+   CUSTOM SCROLLBAR COMPONENT
+   ============================================= */
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  background-clip: content-box;
+  min-height: 32px;
+  transition: background-color 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+}
+
+/* =============================================
+   LAYOUT UTILITIES
+   ============================================= */
+
+.contain-layout {
+  contain: layout paint;
+}
+
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* =============================================
+   ACCESSIBILITY — REDUCED MOTION
+   ============================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
