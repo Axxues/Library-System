@@ -28,6 +28,7 @@ import { Button } from '../components/ui/button.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { Dialog } from '../components/ui/dialog.jsx';
 import { EmptyState } from '../components/ui/empty-state.jsx';
+import { Skeleton, SkeletonCover } from '../components/ui/skeleton.jsx';
 import {
   Table,
   TableHeader,
@@ -37,8 +38,80 @@ import {
   TableCell,
 } from '../components/ui/table.jsx';
 
+function CatalogGridSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col justify-between rounded-3xl border border-border/70 bg-card p-5 shadow-card space-y-4"
+        >
+          <div className="space-y-3.5">
+            <div className="flex items-start justify-between gap-3">
+              <SkeletonCover size="lg" />
+              <div className="flex flex-col items-end gap-1.5">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-4 w-20 rounded-md" />
+              </div>
+            </div>
+            <div className="space-y-2 pt-1">
+              <Skeleton className="h-4 w-4/5 rounded-md" />
+              <Skeleton className="h-3 w-1/2 rounded-md" />
+              <Skeleton className="h-4 w-16 rounded-full" />
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between">
+            <Skeleton className="h-7 w-20 rounded-lg" />
+            <Skeleton className="h-7 w-12 rounded-lg" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CatalogTableSkeleton() {
+  return (
+    <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Book & Details</TableHead>
+            <TableHead>Genre</TableHead>
+            <TableHead>Copy Code</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Condition</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <SkeletonCover size="sm" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-36 rounded" />
+                    <Skeleton className="h-3 w-24 rounded" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-20 rounded font-mono" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+              <TableCell><Skeleton className="h-6 w-20 rounded-lg" /></TableCell>
+              <TableCell className="text-right"><Skeleton className="h-7 w-14 rounded-lg ml-auto" /></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 export default function Catalog() {
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
@@ -69,7 +142,8 @@ export default function Catalog() {
       .then((d) => {
         if (Array.isArray(d)) setRows(d);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -259,7 +333,9 @@ export default function Catalog() {
       </div>
 
       {/* Main Content: Grid vs Table */}
-      {list.length > 0 ? (
+      {loading ? (
+        viewMode === 'grid' ? <CatalogGridSkeleton /> : <CatalogTableSkeleton />
+      ) : list.length > 0 ? (
         viewMode === 'grid' ? (
           /* Visual Card Grid View */
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
