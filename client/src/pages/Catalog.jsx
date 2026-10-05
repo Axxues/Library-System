@@ -56,6 +56,7 @@ export default function Catalog() {
 
   const [condOpen, setCondOpen] = useState(false);
   const [condBusy, setCondBusy] = useState(false);
+  const [condErr, setCondErr] = useState('');
   const [selectedCopy, setSelectedCopy] = useState(null);
   const [condValue, setCondValue] = useState('Good');
 
@@ -110,6 +111,7 @@ export default function Catalog() {
   const handleSaveCondition = async () => {
     if (!selectedCopy?.copyCode) return;
     setCondBusy(true);
+    setCondErr('');
     try {
       await api(`/api/copies/${selectedCopy.copyCode}/condition`, {
         method: 'PATCH',
@@ -119,7 +121,8 @@ export default function Catalog() {
       setCondBusy(false);
       setCondOpen(false);
       fetchCatalog();
-    } catch {
+    } catch (err) {
+      setCondErr(err.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : err.message || 'Failed to update condition');
       setCondBusy(false);
     }
   };
@@ -271,6 +274,7 @@ export default function Catalog() {
                       onClick={() => {
                         setSelectedCopy(r);
                         setCondValue(r.condition || 'Good');
+                        setCondErr('');
                         setCondOpen(true);
                       }}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-2 py-0.5 text-xs font-medium transition-colors hover:bg-muted"
@@ -445,6 +449,12 @@ export default function Catalog() {
 
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Select physical grading for this copy:</p>
+            {condErr && (
+              <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-50 p-3 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" role="alert">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{condErr}</span>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-2">
               {['Good', 'Worn', 'Damaged'].map((c) => (
                 <button
