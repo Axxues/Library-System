@@ -6,9 +6,11 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Filter,
   History,
   RotateCcw,
   Search,
+  Sparkles,
   Users,
   X,
 } from 'lucide-react';
@@ -143,27 +145,30 @@ export default function Loans() {
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Circulation History
+              Circulation Activity & Tracking
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Borrowing Activity
+            Borrowing Activity Log
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Real-time loan registry, due date tracking, and automated overdue flags
+            Monitor circulation records, track upcoming due dates, and process fast check-ins
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant={counts.overdue > 0 ? "destructive" : "success"} statusDot={true}>
-            {counts.overdue > 0 ? `${counts.overdue} Overdue Loans` : 'No Overdue Loans'}
+          <Badge
+            variant={counts.overdue > 0 ? "destructive" : "success"}
+            statusDot={true}
+          >
+            {counts.overdue > 0 ? `${counts.overdue} Overdue Attention Required` : 'Shelves in Good Standing'}
           </Badge>
         </div>
       </div>
 
-      {/* Tabs and Search Bar */}
+      {/* Filter Tabs and Search Toolbar */}
       <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card md:flex-row md:items-center md:justify-between">
-        {/* Filter Tabs */}
+        {/* Status Filter Tabs */}
         <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/70 bg-muted/40 p-1">
           <button
             onClick={() => load('')}
@@ -199,10 +204,10 @@ export default function Loans() {
           </button>
         </div>
 
-        {/* Search Input */}
+        {/* Search Bar */}
         <div className="relative flex-1 max-w-sm">
           <Input
-            placeholder="Search by patron, title, or barcode…"
+            placeholder="Search by patron code, title, or barcode…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-9 text-sm"
@@ -219,7 +224,7 @@ export default function Loans() {
         </div>
       </div>
 
-      {/* Loans Table */}
+      {/* Main Loans Activity Table */}
       <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
         {list.length > 0 ? (
           <Table>
