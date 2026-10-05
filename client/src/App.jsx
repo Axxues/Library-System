@@ -4,6 +4,7 @@ import Login from './pages/Login.jsx';
 import Desk from './pages/Desk.jsx';
 import Scan from './pages/Scan.jsx';
 import Catalog from './pages/Catalog.jsx';
+import AddBook from './pages/AddBook.jsx';
 import Patrons from './pages/Patrons.jsx';
 import Loans from './pages/Loans.jsx';
 import Lookup from './pages/Lookup.jsx';
@@ -30,6 +31,7 @@ export default function App() {
         <Route element={<Layout theme={theme} setTheme={setTheme} onLogout={() => logout()} />}>
           <Route path="/desk" element={page(<Desk />)} />
           <Route path="/scan" element={page(<Scan />)} />
+          <Route path="/catalog/new" element={page(<AddBook />)} />
           <Route path="/catalog" element={page(<Catalog />)} />
           <Route path="/patrons" element={page(<Patrons />)} />
           <Route path="/loans" element={page(<Loans />)} />
