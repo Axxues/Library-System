@@ -1,6 +1,8 @@
 // client/src/pages/Loans.jsx
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import { Badge } from '../components/ui/badge.jsx';
+import { Button } from '../components/ui/button.jsx';
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 export default function Loans() {
   const [rows, setRows] = useState([]); const [f, setF] = useState('');
@@ -11,17 +13,17 @@ export default function Loans() {
   const groups = {};
   rows.forEach((l) => { const k = fmt(l.checkoutAt); (groups[k] = groups[k] || []).push(l); });
   return (<div>
-    <div className="crumbs">Dashboard / Activity</div>
-    <div className="page-head"><h2>Borrowing activity</h2><p>Every checkout and return, with overdue flagged automatically.</p></div>
-    <div className="card">
-      <div className="toolbar">
-        <button className={'secondary' + (f === '' ? ' active' : '')} onClick={() => load('')}>All ({counts.all})</button>
-        <button className={'secondary' + (f === 'active' ? ' active' : '')} onClick={() => load('active')}>Active ({counts.active})</button>
-        <button className={'secondary' + (f === 'overdue' ? ' active' : '')} onClick={() => load('overdue')}>Overdue ({counts.overdue})</button>
-        <span className="pill">{rows.length} shown</span>
+    <p className="mb-1.5 text-xs text-muted-foreground">Dashboard / Activity</p>
+    <div className="mb-5"><h2 className="heading-2">Borrowing activity</h2><p className="text-sm text-muted-foreground">Every checkout and return, with overdue flagged automatically.</p></div>
+    <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover">
+      <div className="mb-3 flex items-center gap-2">
+        <Button variant="secondary" onClick={() => load('')}>All ({counts.all})</Button>
+        <Button variant="secondary" onClick={() => load('active')}>Active ({counts.active})</Button>
+        <Button variant="secondary" onClick={() => load('overdue')}>Overdue ({counts.overdue})</Button>
+        <Badge variant="default">{rows.length} shown</Badge>
       </div>
-      <div className="ledger">{Object.entries(groups).map(([day, ls]) => <div key={day}><div className="day">{day}</div>{ls.map((l) => <div key={l.id} className="loanrow"><span className="grow"><span className="mono">{l.patronCode}</span> → {l.title || l.copyCode}<br /><span className="subtle">{fmt(l.checkoutAt)} – {fmt(l.dueAt)} · returned {fmt(l.returnAt)}</span></span>{l.returnAt ? <span className="stamp ok">Returned</span> : new Date(l.dueAt) < new Date() ? <span className="stamp late">Overdue</span> : <span className="stamp busy">Borrowed</span>}</div>)}</div>)}</div>
-      {rows.length === 0 && <div className="empty">No loans in this view yet.</div>}
+      <div className="grid gap-4">{Object.entries(groups).map(([day, ls]) => <div key={day}><div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{day}</div>{ls.map((l) => <div key={l.id} className="flex items-center gap-2 border-t border-border py-2 text-sm"><span className="min-w-0 flex-1"><span className="font-mono text-xs">{l.patronCode}</span> → {l.title || l.copyCode}<br /><span className="text-xs text-muted-foreground">{fmt(l.checkoutAt)} – {fmt(l.dueAt)} · returned {fmt(l.returnAt)}</span></span>{l.returnAt ? <Badge variant="success">Returned</Badge> : new Date(l.dueAt) < new Date() ? <Badge variant="destructive">Overdue</Badge> : <Badge variant="default">Borrowed</Badge>}</div>)}</div>)}</div>
+      {rows.length === 0 && <div className="py-7 text-center text-sm text-muted-foreground">No loans in this view yet.</div>}
     </div>
   </div>);
 }

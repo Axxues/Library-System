@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { Cover } from '../cover.jsx';
+import { Card, CardDescription } from '../components/ui/card.jsx';
+import { Badge } from '../components/ui/badge.jsx';
+import { Button } from '../components/ui/button.jsx';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table.jsx';
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 function last8() {
@@ -62,35 +66,35 @@ export default function Desk() {
     { t: 'Top reader', v: insights.reader },
   ];
   return (<div>
-    <div className="crumbs">Dashboard</div>
-    <div className="masthead"><div className="grow"><h2>Front desk</h2><p>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} — the library at a glance.</p></div><button onClick={() => nav('/scan')}>Go to scan</button></div>
-    <div className="dash">
-      <div className="dash-main">
-        <div className="grid three">
-          {tiles.map((s) => <div key={s.lbl} className="card" data-tip={s.tip} tabIndex={0}><span className="num">{s.num}</span><span className="lbl">{s.lbl}</span></div>)}
+    <p className="mb-1.5 text-xs text-muted-foreground">Dashboard</p>
+    <div className="mb-5 flex flex-wrap items-end gap-4"><div className="min-w-0 flex-1"><h2 className="heading-2">Front desk</h2><p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} — the library at a glance.</p></div><Button onClick={() => nav('/scan')}>Go to scan</Button></div>
+    <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
+      <div className="grid content-start gap-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          {tiles.map((s) => <div key={s.lbl} className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover" data-tip={s.tip} tabIndex={0}><span className="text-2xl font-extrabold tracking-tight">{s.num}</span><span className="text-xs text-muted-foreground"> {s.lbl}</span></div>)}
         </div>
-        <div className="card"><div className="row"><div className="grow"><h3>Borrowing trend</h3><p className="desc">Checkouts per month, last 8 months.</p></div></div>
-          <div className="bars">{trend.map((t) => <div key={t.key} className="barcol" data-tip={`${t.label} — ${t.n} checkout${t.n === 1 ? '' : 's'}`} tabIndex={0}><div className="bar" style={{ height: `${Math.max(6, (t.n / max) * 120)}px` }} /><span>{t.label}</span></div>)}</div>
+        <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><div className="flex items-center gap-2"><div className="min-w-0 flex-1"><h3 className="font-semibold">Borrowing trend</h3><p className="text-sm text-muted-foreground">Checkouts per month, last 8 months.</p></div></div>
+          <div className="flex items-end gap-2 pt-3">{trend.map((t) => <div key={t.key} className="flex flex-1 flex-col items-center gap-1 text-xs text-muted-foreground" data-tip={`${t.label} — ${t.n} checkout${t.n === 1 ? '' : 's'}`} tabIndex={0}><div className="w-6 rounded-t bg-primary" style={{ height: `${Math.max(6, (t.n / max) * 120)}px` }} /><span>{t.label}</span></div>)}</div>
         </div>
-        <div className="grid three">
-          {notes.map((n) => <div key={n.t} className="card"><p className="eyebrow">{n.t}</p><h3 style={{ margin: 0 }}>{n.v}</h3></div>)}
+        <div className="grid gap-4 md:grid-cols-3">
+          {notes.map((n) => <div key={n.t} className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{n.t}</p><h3 className="font-semibold" style={{ margin: 0 }}>{n.v}</h3></div>)}
         </div>
-        <div className="card"><h3>Latest activity</h3><p className="desc">Five most recent loans.</p>
-          <table><thead><tr><th>Patron</th><th>Book</th><th>Checked out</th><th>Status</th></tr></thead><tbody>
-            {recent.map((l) => <tr key={l.id}><td className="mono">{l.patronCode}</td><td><span className="cellmain"><Cover title={l.title} /><span className="t">{l.title || l.copyCode}</span></span></td><td>{fmt(l.checkoutAt)}</td>
-              <td>{l.returnAt ? <span className="stamp ok">Returned</span> : <span className="stamp busy">On loan</span>}</td></tr>)}
-          </tbody></table>
-          {recent.length === 0 && <div className="empty">No loans yet.</div>}
+        <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Latest activity</h3><p className="text-sm text-muted-foreground">Five most recent loans.</p>
+          <Table><TableHeader><TableRow><TableHead>Patron</TableHead><TableHead>Book</TableHead><TableHead>Checked out</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>
+            {recent.map((l) => <TableRow key={l.id}><TableCell className="font-mono text-xs">{l.patronCode}</TableCell><TableCell><span className="flex items-center gap-2.5"><Cover title={l.title} /><span className="font-semibold">{l.title || l.copyCode}</span></span></TableCell><TableCell>{fmt(l.checkoutAt)}</TableCell>
+              <TableCell>{l.returnAt ? <Badge variant="success">Returned</Badge> : <Badge variant="default">On loan</Badge>}</TableCell></TableRow>)}
+          </TableBody></Table>
+          {recent.length === 0 && <div className="py-7 text-center text-sm text-muted-foreground">No loans yet.</div>}
         </div>
       </div>
-      <div className="dash-side">
-        <div className="card"><h3>Overdue</h3><p className="desc">Needs a follow-up call.</p>
-          {overdue.length === 0 && <p className="desc">Nothing overdue. Quiet shelves.</p>}
-          {overdue.map((l) => <div key={l.id} className="loanrow"><Cover title={l.title} /><span className="grow">{l.title}<br /><span className="subtle mono">{l.patronCode} · due {fmt(l.dueAt)}</span></span><span className="stamp late">Late</span></div>)}
+      <div className="grid content-start gap-4">
+        <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Overdue</h3><p className="text-sm text-muted-foreground">Needs a follow-up call.</p>
+          {overdue.length === 0 && <p className="text-sm text-muted-foreground">Nothing overdue. Quiet shelves.</p>}
+          {overdue.map((l) => <div key={l.id} className="flex items-center gap-2 border-t border-border py-2 text-sm"><Cover title={l.title} /><span className="min-w-0 flex-1">{l.title}<br /><span className="font-mono text-xs text-muted-foreground">{l.patronCode} · due {fmt(l.dueAt)}</span></span><Badge variant="destructive">Late</Badge></div>)}
         </div>
-        <div className="card"><h3>Popular now</h3><p className="desc">Most borrowed titles of all time.</p>
-          {popular.length === 0 && <p className="desc">No circulation yet.</p>}
-          {popular.map((p, i) => <div key={p.title} className="loanrow"><span className="num">{i + 1}</span><Cover title={p.title} size="lg" /><span className="grow">{p.title}</span><span className="stamp busy">{p.n}×</span></div>)}
+        <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Popular now</h3><p className="text-sm text-muted-foreground">Most borrowed titles of all time.</p>
+          {popular.length === 0 && <p className="text-sm text-muted-foreground">No circulation yet.</p>}
+          {popular.map((p, i) => <div key={p.title} className="flex items-center gap-2 border-t border-border py-2 text-sm"><span className="text-lg font-bold">{i + 1}</span><Cover title={p.title} size="lg" /><span className="min-w-0 flex-1">{p.title}</span><Badge variant="default">{p.n}×</Badge></div>)}
         </div>
       </div>
     </div>
