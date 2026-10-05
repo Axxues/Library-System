@@ -7,8 +7,11 @@ import {
   CreditCard,
   Download,
   ExternalLink,
+  LayoutGrid,
   Library,
+  List,
   Mail,
+  MapPin,
   MoreHorizontal,
   Phone,
   Printer,
@@ -41,17 +44,20 @@ export default function Patrons() {
   const [q, setQ] = useState('');
   const [qr, setQr] = useState(null);
   const [prof, setProf] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('patrons_view') || 'cards');
 
   useEffect(() => {
-    setLoading(true);
     api('/api/patrons')
       .then((d) => {
         if (Array.isArray(d)) setRows(d);
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {});
   }, []);
+
+  const setAndSaveView = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem('patrons_view', mode);
+  };
 
   const list = rows.filter((p) =>
     (p.code + ' ' + p.name + ' ' + (p.contact || '')).toLowerCase().includes(q.toLowerCase())
@@ -65,26 +71,27 @@ export default function Patrons() {
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Borrower Directory
+              Borrower Membership Directory
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Library Members
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Registered patrons, student/faculty IDs, and printable Dual-QR library passes
+            Registered resident and student borrowers with printable Dual-QR library passes
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge variant="neutral">
-            {rows.length} Registered Members
+            {rows.length} Total Members
           </Badge>
         </div>
       </div>
 
-      {/* Search & Actions Toolbar */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card md:flex-row md:items-center md:justify-between">
+      {/* Control Toolbar with View Switcher */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
+        {/* Search Input */}
         <div className="relative flex-1 max-w-md">
           <Input
             placeholder="Search by patron name, code, or contact…"
@@ -103,95 +110,189 @@ export default function Patrons() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* View Toggle and Count */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center rounded-xl border border-border/70 bg-muted/40 p-1">
+            <button
+              onClick={() => setAndSaveView('cards')}
+              title="Membership Cards View"
+              aria-label="Membership Cards View"
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                viewMode === 'cards'
+                  ? 'bg-card text-primary shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setAndSaveView('table')}
+              title="Directory Table View"
+              aria-label="Directory Table View"
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                viewMode === 'table'
+                  ? 'bg-card text-primary shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+
           <span className="text-xs text-muted-foreground">Showing {list.length} patrons</span>
         </div>
       </div>
 
-      {/* Patrons Directory Table */}
-      <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
-        {list.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member Name & ID</TableHead>
-                <TableHead>Patron Code</TableHead>
-                <TableHead>Contact Info</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.map((p) => (
-                <TableRow key={p.code} className="group">
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm">
-                        {(p.name || 'P')[0].toUpperCase()}
-                      </span>
-                      <div className="min-w-0 max-w-[280px]">
-                        <p className="truncate font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
-                          {p.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {p.role || 'General Patron'}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-md border border-border/60 bg-muted/30 px-2 py-1 font-mono text-xs font-semibold text-foreground">
-                      {p.code}
+      {/* Main Content: Cards Grid vs Table */}
+      {list.length > 0 ? (
+        viewMode === 'cards' ? (
+          /* Member Pass Cards Grid View */
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {list.map((p) => (
+              <div
+                key={p.code}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:border-primary/40 hover:shadow-lifted hover:-translate-y-0.5"
+              >
+                <div className="space-y-4">
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent text-primary font-bold text-base shadow-xs">
+                      {(p.name || 'P')[0].toUpperCase()}
                     </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs text-muted-foreground">
-                      {p.contact || 'No contact on file'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="success" statusDot={true}>
+                    <Badge variant="success" statusDot={true} className="text-[10px]">
                       Active
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setQr(p)}
-                        className="h-8 rounded-lg px-2.5 text-xs shadow-xs"
-                      >
-                        <QrCode className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
-                        Library Card
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setProf(p)}
-                        className="h-8 rounded-lg px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        <User className="h-3.5 w-3.5" />
-                        <span className="sr-only">Details</span>
-                      </Button>
+                  </div>
+
+                  {/* Patron Details */}
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                      {p.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className="rounded-md border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[11px] font-bold text-foreground">
+                        {p.code}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {p.role || 'Member'}
+                      </span>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="p-6">
-            <EmptyState
-              icon={Users}
-              title="No patrons found"
-              description="No registered members match your search query."
-              actionText="Reset Search"
-              onAction={() => setQ('')}
-            />
+                  </div>
+
+                  {/* Contact Snippet */}
+                  <div className="rounded-xl border border-border/50 bg-muted/20 p-2.5 text-[11px] text-muted-foreground">
+                    <p className="truncate">{p.contact || 'Registered municipal resident'}</p>
+                  </div>
+                </div>
+
+                {/* Card Action Footer */}
+                <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setProf(p)}
+                    className="h-8 flex-1 text-xs rounded-xl shadow-xs"
+                  >
+                    <User className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                    Profile
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setQr(p)}
+                    className="h-8 flex-1 text-xs rounded-xl shadow-primary-sm"
+                  >
+                    <QrCode className="mr-1.5 h-3.5 w-3.5" />
+                    Library Pass
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        ) : (
+          /* Dense Directory Table View */
+          <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Member Name & ID</TableHead>
+                  <TableHead>Patron Code</TableHead>
+                  <TableHead>Contact Info</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {list.map((p) => (
+                  <TableRow key={p.code} className="group">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm">
+                          {(p.name || 'P')[0].toUpperCase()}
+                        </span>
+                        <div className="min-w-0 max-w-[280px]">
+                          <p className="truncate font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
+                            {p.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {p.role || 'General Patron'}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center rounded-md border border-border/60 bg-muted/30 px-2 py-1 font-mono text-xs font-semibold text-foreground">
+                        {p.code}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-muted-foreground">
+                        {p.contact || 'No contact on file'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="success" statusDot={true}>
+                        Active
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setQr(p)}
+                          className="h-8 rounded-lg px-2.5 text-xs shadow-xs"
+                        >
+                          <QrCode className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                          Library Card
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setProf(p)}
+                          className="h-8 rounded-lg px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          <User className="h-3.5 w-3.5" />
+                          <span className="sr-only">Details</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : (
+        <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card">
+          <EmptyState
+            icon={Users}
+            title="No patrons found"
+            description="No registered members match your search query."
+            actionText="Reset Search"
+            onAction={() => setQ('')}
+          />
+        </div>
+      )}
 
       {/* Printable Municipal Library Card Modal */}
       <Dialog open={!!qr} onClose={() => setQr(null)}>
