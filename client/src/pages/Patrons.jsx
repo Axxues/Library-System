@@ -30,6 +30,7 @@ import { Button } from '../components/ui/button.jsx';
 import { Dialog } from '../components/ui/dialog.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { EmptyState } from '../components/ui/empty-state.jsx';
+import { Skeleton } from '../components/ui/skeleton.jsx';
 import {
   Table,
   TableHeader,
@@ -39,8 +40,83 @@ import {
   TableCell,
 } from '../components/ui/table.jsx';
 
+function PatronsCardSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col justify-between rounded-3xl border border-border/70 bg-card p-5 shadow-card space-y-4"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <Skeleton className="h-12 w-12 rounded-2xl" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-36 rounded-md" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-16 rounded-md" />
+                <Skeleton className="h-3 w-14 rounded-md" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-full rounded-xl" />
+          </div>
+          <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
+            <Skeleton className="h-8 flex-1 rounded-xl" />
+            <Skeleton className="h-8 flex-1 rounded-xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PatronsTableSkeleton() {
+  return (
+    <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Member & Identity</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Contact / Notes</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-2xl" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32 rounded" />
+                    <Skeleton className="h-3 w-20 rounded" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-40 rounded" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <Skeleton className="h-8 w-16 rounded-xl" />
+                  <Skeleton className="h-8 w-16 rounded-xl" />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 export default function Patrons() {
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [qr, setQr] = useState(null);
   const [prof, setProf] = useState(null);
@@ -51,7 +127,8 @@ export default function Patrons() {
       .then((d) => {
         if (Array.isArray(d)) setRows(d);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const setAndSaveView = (mode) => {
@@ -144,7 +221,9 @@ export default function Patrons() {
       </div>
 
       {/* Main Content: Cards Grid vs Table */}
-      {list.length > 0 ? (
+      {loading ? (
+        viewMode === 'cards' ? <PatronsCardSkeleton /> : <PatronsTableSkeleton />
+      ) : list.length > 0 ? (
         viewMode === 'cards' ? (
           /* Member Pass Cards Grid View */
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
