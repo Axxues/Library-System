@@ -13,7 +13,7 @@ export function Sidebar({ open, setOpen, collapsed, onToggle }) {
   return (
     <>
       {open && <div className="overlay-backdrop fixed inset-0 z-10 lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={cn("z-20 flex h-[calc(100vh-4rem)] flex-col border-r border-border/60 bg-background/95 backdrop-blur-xl transition-all max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-16", open ? "max-lg:translate-x-0" : "max-lg:-translate-x-full", collapsed ? "lg:w-16 w-72" : "w-72")}>
+      <aside className={cn("relative z-20 flex h-[calc(100vh-4rem)] flex-col border-r border-border/60 bg-background/95 backdrop-blur-xl transition-all max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:top-16", open ? "max-lg:translate-x-0" : "max-lg:-translate-x-full", collapsed ? "lg:w-16 w-72" : "w-72")}>
         <button type="button" onClick={onToggle} className="absolute top-3 right-0 hidden h-9 w-9 translate-x-1/2 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-subtle lg:flex" aria-label="Toggle sidebar">
           {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
         </button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Menu, Moon, Search, Settings as SettingsIcon, Sun, UserRound, X } from 'lucide-react';
 import { NAV } from "./Sidebar.jsx";
@@ -7,6 +7,7 @@ export function Navbar({ sidebarOpen, setSidebarOpen, theme, setTheme, onLogout 
   const [q, setQ] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   const nav = useNavigate();
   const me = (() => { try { return JSON.parse(localStorage.getItem('staff') || '{}'); } catch { return {}; } })();
   const results = NAV.filter((l) => (l.label + l.to).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8);
@@ -14,6 +15,13 @@ export function Navbar({ sidebarOpen, setSidebarOpen, theme, setTheme, onLogout 
     const onKey = (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); } };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  useEffect(() => {
+    const outside = (e) => { if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false); };
+    const esc = (e) => { if (e.key === 'Escape') setProfileOpen(false); };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', esc); };
   }, []);
   return (
     <nav className="glass fixed top-0 z-30 w-full border-b border-border/40 shadow-subtle">
@@ -27,7 +35,7 @@ export function Navbar({ sidebarOpen, setSidebarOpen, theme, setTheme, onLogout 
           <span className="flex items-center text-sm font-semibold text-muted-foreground"><Search className="mr-3 h-4 w-4" />Search pages…</span>
           <span className="rounded-lg border border-border bg-background px-2 py-1 text-[10px] font-black text-muted-foreground">Ctrl K</span>
         </button>
-        <div className="relative">
+        <div className="relative" ref={profileRef}>
           <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center rounded-xl border border-transparent px-2 py-1.5 hover:border-border hover:bg-accent">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">{(me.username || 'S')[0].toUpperCase()}</span>
             <span className="ml-2 hidden max-w-[120px] truncate text-sm font-bold sm:block">{me.username || 'Staff'}</span>
