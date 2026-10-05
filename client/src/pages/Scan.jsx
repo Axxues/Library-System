@@ -9,11 +9,14 @@ import {
   CheckCircle2,
   Clock,
   CornerDownLeft,
+  ExternalLink,
   FileText,
+  Layers,
   Printer,
   QrCode,
   RotateCcw,
   Sparkles,
+  Tag,
   UserCheck,
   UserX,
   Users,
@@ -103,7 +106,7 @@ export default function Scan() {
         setDir({
           catalog: Array.isArray(cat) ? cat : [],
           patrons: Array.isArray(pats) ? pats : [],
-          recent: Array.isArray(loans) ? loans.slice(0, 4) : [],
+          recent: Array.isArray(loans) ? loans.slice(0, 5) : [],
         });
       })
       .catch(() => {});
@@ -132,9 +135,8 @@ export default function Scan() {
       setErr(r.error);
     } else {
       setOut({ ...r, action });
-      // Refresh recent
       api('/api/loans').then((loans) => {
-        if (Array.isArray(loans)) setDir((d) => ({ ...d, recent: loans.slice(0, 4) }));
+        if (Array.isArray(loans)) setDir((d) => ({ ...d, recent: loans.slice(0, 5) }));
       }).catch(() => {});
     }
   };
@@ -166,33 +168,32 @@ export default function Scan() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Workflow Tracker */}
+      {/* Station Command Banner */}
       <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/70 bg-gradient-to-r from-card via-card to-primary/5 p-6 shadow-card sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Circulation Station · Terminal 01
+              Dual-QR Station · Console 01
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Dual-QR Circulation
+            Circulation Scanner Terminal
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Real-time optical scanner & automated book loan checkout/check-in
+            Automated Dual-QR optical scan station for borrower cards and book barcodes
           </p>
         </div>
 
-        {/* Status pill */}
         <div className="flex items-center gap-2">
           <Badge variant={cam.active ? "success" : "neutral"} statusDot={true}>
-            {cam.active ? "Optical Sensor Live" : "Manual & Optical Ready"}
+            {cam.active ? "Optical Sensor Active" : "Scanner Ready"}
           </Badge>
         </div>
       </div>
 
-      {/* Stepper Progress Bar */}
-      <div className="grid gap-2 sm:grid-cols-3">
+      {/* 3-Stage Connected Workflow Breadcrumb */}
+      <div className="grid gap-3 sm:grid-cols-3">
         {STEPS.map((s, idx) => {
           const isActive = idx === step;
           const isDone = idx < step;
@@ -205,18 +206,18 @@ export default function Scan() {
                   setStep(idx);
                 }
               }}
-              className={`flex items-center gap-3 rounded-2xl border p-3.5 transition-all duration-150 ${
+              className={`flex items-center gap-3 rounded-2xl border p-4 transition-all duration-150 ${
                 idx < step ? 'cursor-pointer hover:bg-muted/40' : ''
               } ${
                 isActive
-                  ? 'border-primary/50 bg-primary/5 shadow-xs'
+                  ? 'border-primary/60 bg-primary/5 shadow-xs'
                   : isDone
-                  ? 'border-border/70 bg-card/60'
-                  : 'border-border/40 bg-card/30 opacity-70'
+                  ? 'border-border/80 bg-card'
+                  : 'border-border/40 bg-card/40 opacity-70'
               }`}
             >
               <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
                   isActive
                     ? 'bg-primary text-primary-foreground shadow-primary-sm'
                     : isDone
@@ -227,7 +228,7 @@ export default function Scan() {
                 {isDone ? '✓' : idx + 1}
               </span>
               <div className="min-w-0">
-                <p className={`text-xs font-semibold ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <p className={`text-xs font-bold ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {s.label}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">{s.hint}</p>
@@ -237,19 +238,19 @@ export default function Scan() {
         })}
       </div>
 
-      {/* Main Console Grid */}
+      {/* Split Console Grid */}
       <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Left Console: Viewfinder + Input */}
         <div className="space-y-6">
-          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card">
-            <div className="flex items-center justify-between pb-4 border-b border-border/50">
+          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border/50">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <QrCode className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-foreground tracking-tight">
-                    {step === 0 ? "Scan Patron Identification" : step === 1 ? "Scan Book Copy Barcode" : "Review Circulation Authorization"}
+                  <h3 className="text-base font-bold text-foreground">
+                    {step === 0 ? "Identify Patron" : step === 1 ? "Identify Book Copy" : "Authorize Transaction"}
                   </h3>
                   <p className="text-xs text-muted-foreground">{STEPS[step].hint}</p>
                 </div>
@@ -261,22 +262,22 @@ export default function Scan() {
               )}
             </div>
 
-            {/* Input Form & Camera Section */}
+            {/* Input & Camera Area */}
             {!out && (
-              <div className="mt-5 space-y-4">
+              <div className="space-y-4 pt-1">
                 {step === 0 && (
                   <div className="space-y-3">
                     <div>
                       <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                        <span>Patron Identifier Code</span>
-                        <span className="text-[11px] font-normal text-muted-foreground">e.g. P-0001</span>
+                        <span>Patron Membership Code</span>
+                        <span className="text-[11px] font-mono text-muted-foreground">Default: P-0001</span>
                       </label>
                       <div className="relative">
                         <Input
                           className="font-mono text-sm pl-9"
                           value={patronCode}
                           onChange={(e) => setP(e.target.value)}
-                          placeholder="Type or scan patron code…"
+                          placeholder="Type or scan patron QR code…"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && patronCode.trim()) next();
                           }}
@@ -285,17 +286,16 @@ export default function Scan() {
                       </div>
                     </div>
 
-                    {/* Patron Match Preview Card */}
                     {patronCode.trim() && (
                       patron ? (
-                        <div className="flex items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-50/50 p-3.5 dark:bg-emerald-950/20">
+                        <div className="flex items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-50/50 p-4 dark:bg-emerald-950/20">
                           <div className="flex items-center gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-sm">
+                            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-sm">
                               {patron.name.trim()[0]}
                             </span>
                             <div>
                               <p className="text-sm font-bold text-foreground">{patron.name}</p>
-                              <p className="text-xs font-mono text-muted-foreground">{patron.code} · {patron.role || 'Member'}</p>
+                              <p className="text-xs font-mono text-muted-foreground">{patron.code} · {patron.role || 'Active Member'}</p>
                             </div>
                           </div>
                           <Badge variant="success" statusDot={true}>Verified</Badge>
@@ -303,7 +303,7 @@ export default function Scan() {
                       ) : (
                         <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-50/60 p-3 text-xs text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">
                           <AlertCircle className="h-4 w-4 shrink-0" />
-                          <span>Unregistered patron identifier. Check barcode or add new member.</span>
+                          <span>Unregistered patron code. Check barcode on ID pass.</span>
                         </div>
                       )
                     )}
@@ -313,7 +313,7 @@ export default function Scan() {
                 {step === 1 && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between rounded-xl bg-muted/40 px-3.5 py-2 text-xs">
-                      <span className="text-muted-foreground">Borrower Assigned:</span>
+                      <span className="text-muted-foreground">Assigned Borrower:</span>
                       <div className="flex items-center gap-2 font-semibold text-foreground">
                         <span>{patron?.name || patronCode}</span>
                         <button
@@ -328,15 +328,15 @@ export default function Scan() {
 
                     <div>
                       <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                        <span>Book Accession / Copy Barcode</span>
-                        <span className="text-[11px] font-normal text-muted-foreground">e.g. B-COPY-001</span>
+                        <span>Book Accession / Barcode</span>
+                        <span className="text-[11px] font-mono text-muted-foreground">Default: B-COPY-001</span>
                       </label>
                       <div className="relative">
                         <Input
                           className="font-mono text-sm pl-9"
                           value={copyCode}
                           onChange={(e) => setC(e.target.value)}
-                          placeholder="Type or scan book copy code…"
+                          placeholder="Type or scan book copy barcode…"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && copyCode.trim()) next();
                           }}
@@ -345,10 +345,9 @@ export default function Scan() {
                       </div>
                     </div>
 
-                    {/* Book Match Preview */}
                     {copyCode.trim() && (
                       book ? (
-                        <div className="flex items-center justify-between rounded-2xl border border-blue-500/30 bg-blue-50/50 p-3.5 dark:bg-blue-950/20">
+                        <div className="flex items-center justify-between rounded-2xl border border-blue-500/30 bg-blue-50/50 p-4 dark:bg-blue-950/20">
                           <div className="flex items-center gap-3">
                             <Cover title={book.title} size="md" />
                             <div className="min-w-0">
@@ -356,33 +355,35 @@ export default function Scan() {
                               <p className="text-xs text-muted-foreground">{book.author} · {book.genre}</p>
                             </div>
                           </div>
-                          <Badge variant={book.status === 'Available' ? 'success' : 'default'} statusDot={true}>
-                            {book.status}
-                          </Badge>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={book.status === 'Available' ? 'success' : 'default'} statusDot={true}>
+                              {book.status}
+                            </Badge>
+                          </div>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-50/60 p-3 text-xs text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">
                           <AlertCircle className="h-4 w-4 shrink-0" />
-                          <span>Unknown book copy barcode. Verify label in catalog.</span>
+                          <span>Unknown copy barcode. Verify spine label in catalog.</span>
                         </div>
                       )
                     )}
                   </div>
                 )}
 
-                {/* Camera Viewfinder Box */}
+                {/* Viewfinder Console */}
                 {step < 2 && (
                   <div className="overflow-hidden rounded-2xl border border-border/80 bg-muted/20">
                     {!cam.active ? (
-                      <div className="flex flex-col items-center justify-center p-6 text-center">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-3">
-                          <Camera className="h-6 w-6" />
+                      <div className="flex flex-col items-center justify-center p-8 text-center">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-3">
+                          <Camera className="h-7 w-7" />
                         </div>
-                        <p className="text-sm font-semibold text-foreground">
-                          Optical Scanner Standby
+                        <p className="text-sm font-bold text-foreground">
+                          Optical Sensor Ready
                         </p>
                         <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                          Align patron ID card or book barcode in front of the camera lens.
+                          Align patron ID card or book barcode inside the viewfinder window.
                         </p>
                         <Button
                           onClick={() => cam.start(setForStep)}
@@ -402,7 +403,6 @@ export default function Scan() {
                           <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary rounded-tr" />
                           <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary rounded-bl" />
                           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary rounded-br" />
-                          {/* Animated laser scan line */}
                           <div className="absolute left-0 right-0 h-0.5 bg-primary/90 shadow-[0_0_12px_hsl(var(--primary))] animate-laser-scan" />
                         </div>
 
@@ -420,19 +420,19 @@ export default function Scan() {
                     <canvas ref={cam.c} hidden />
                     {cam.denied && (
                       <div className="p-3 text-xs text-muted-foreground text-center border-t border-border/50">
-                        Camera access unavailable or denied. Please type barcode numbers manually.
+                        Camera access unavailable or denied. Type barcode numbers manually.
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Step 2 Confirm Details */}
+                {/* Step 2 Authorization Console */}
                 {step === 2 && (
                   <div className="space-y-4">
                     <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
                       <div className="flex items-center justify-between pb-2 border-b border-border/50">
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Borrower Details
+                          Borrower Identification
                         </span>
                         <Badge variant="neutral">{patron?.role || 'Member'}</Badge>
                       </div>
@@ -450,7 +450,7 @@ export default function Scan() {
                     <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
                       <div className="flex items-center justify-between pb-2 border-b border-border/50">
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Book Copy Details
+                          Book Copy Barcode
                         </span>
                         <Badge variant={book?.status === 'Available' ? 'success' : 'default'} statusDot={true}>
                           {book?.status || 'Unknown'}
@@ -494,7 +494,7 @@ export default function Scan() {
                   </div>
                 )}
 
-                {/* Continue CTA for Steps 0 and 1 */}
+                {/* Continue button for steps 0 and 1 */}
                 {step < 2 && (
                   <div className="flex justify-end pt-2">
                     <Button
@@ -510,18 +510,18 @@ export default function Scan() {
               </div>
             )}
 
-            {/* Output Transaction Receipt */}
+            {/* Output Transaction Confirmation Receipt */}
             {out && (
-              <div className="mt-5 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="space-y-5 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between rounded-2xl border border-emerald-500/40 bg-emerald-50 p-4 dark:bg-emerald-950/30">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                     <div>
                       <h4 className="text-base font-bold text-foreground">
-                        {out.action === 'return' ? 'Book Return Processed' : 'Checkout Authorized'}
+                        {out.action === 'return' ? 'Book Return Confirmed' : 'Checkout Authorized'}
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Recorded at {new Date().toLocaleTimeString()} · Latency {out.ms}ms
+                        Processed at {new Date().toLocaleTimeString()} · Latency {out.ms}ms
                       </p>
                     </div>
                   </div>
@@ -541,12 +541,6 @@ export default function Scan() {
                     <span className="text-muted-foreground text-xs">Due Date</span>
                     <span className="font-mono font-bold text-primary">{due}</span>
                   </div>
-                  {out.condition && (
-                    <div className="flex justify-between py-1.5 border-b border-border/40">
-                      <span className="text-muted-foreground text-xs">Copy Condition</span>
-                      <Badge variant={out.condition === 'Good' ? 'success' : out.condition === 'Worn' ? 'warning' : 'destructive'}>{out.condition}</Badge>
-                    </div>
-                  )}
                 </div>
 
                 {Array.isArray(out?.recommendations) && out.recommendations.length > 0 && (
@@ -590,24 +584,25 @@ export default function Scan() {
           </div>
         </div>
 
-        {/* Right Console: Live Station Summary & Recent Shift Feed */}
+        {/* Right Console: Dual Smart Dock & Shift Feed */}
         <div className="space-y-6">
-          {/* Active Terminal Slot Summary */}
-          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground pb-3 border-b border-border/50">
-              Circulation Active Slots
-            </h3>
+          {/* Dual Smart Dock Card */}
+          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border/50">
+              <h3 className="text-sm font-bold text-foreground">Circulation Smart Dock</h3>
+              <Layers className="h-4 w-4 text-muted-foreground" />
+            </div>
 
-            <div className="mt-4 space-y-4">
-              {/* Slot 1: Patron */}
-              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Slot 1: Patron</span>
-                  {patron ? <Badge variant="success" statusDot={true}>Active</Badge> : <Badge variant="neutral">Waiting</Badge>}
+            <div className="space-y-4">
+              {/* Slot 1: Patron Dock */}
+              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold uppercase tracking-wider">Slot 1 · Patron Pass</span>
+                  {patron ? <Badge variant="success" statusDot={true}>Active</Badge> : <Badge variant="neutral">Standby</Badge>}
                 </div>
                 {patron ? (
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-xs">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-xs">
                       {patron.name[0]}
                     </span>
                     <div className="min-w-0">
@@ -616,15 +611,15 @@ export default function Scan() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">No patron card scanned yet.</p>
+                  <p className="text-xs text-muted-foreground italic">Waiting for patron QR scan…</p>
                 )}
               </div>
 
-              {/* Slot 2: Book */}
-              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Slot 2: Book Copy</span>
-                  {book ? <Badge variant="info" statusDot={true}>Selected</Badge> : <Badge variant="neutral">Waiting</Badge>}
+              {/* Slot 2: Book Copy Dock */}
+              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold uppercase tracking-wider">Slot 2 · Book Copy</span>
+                  {book ? <Badge variant="info" statusDot={true}>Mounted</Badge> : <Badge variant="neutral">Standby</Badge>}
                 </div>
                 {book ? (
                   <div className="flex items-center gap-3">
@@ -635,20 +630,20 @@ export default function Scan() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">No book copy barcode scanned yet.</p>
+                  <p className="text-xs text-muted-foreground italic">Waiting for copy barcode scan…</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Shift Circulation History */}
-          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card">
+          {/* Shift Circulation Feed */}
+          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-3">
             <div className="flex items-center justify-between pb-3 border-b border-border/50">
-              <h3 className="text-sm font-semibold text-foreground">Shift Activity Feed</h3>
+              <h3 className="text-sm font-bold text-foreground">Shift Activity Feed</h3>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
 
-            <div className="mt-3 divide-y divide-border/40">
+            <div className="divide-y divide-border/40">
               {dir.recent.length === 0 ? (
                 <p className="py-6 text-center text-xs text-muted-foreground">
                   No activity processed this shift.
@@ -656,7 +651,7 @@ export default function Scan() {
               ) : (
                 dir.recent.map((l) => (
                   <div key={l.id} className="py-3 first:pt-1 last:pb-1 flex items-center gap-3">
-                    <Cover title={l.title} />
+                    <Cover title={l.title} size="sm" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-foreground truncate">
                         {l.title || l.copyCode}
