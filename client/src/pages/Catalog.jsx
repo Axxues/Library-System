@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   BookOpen,
@@ -8,6 +7,10 @@ import {
   Copy,
   ExternalLink,
   Filter,
+  Grid,
+  Layers,
+  LayoutGrid,
+  List,
   Plus,
   Printer,
   QrCode,
@@ -35,12 +38,11 @@ import {
 } from '../components/ui/table.jsx';
 
 export default function Catalog() {
-  const nav = useNavigate();
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('catalog_view') || 'grid');
 
   // Dialog states
   const [addOpen, setAddOpen] = useState(false);
@@ -56,7 +58,6 @@ export default function Catalog() {
 
   const [condOpen, setCondOpen] = useState(false);
   const [condBusy, setCondBusy] = useState(false);
-  const [condErr, setCondErr] = useState('');
   const [selectedCopy, setSelectedCopy] = useState(null);
   const [condValue, setCondValue] = useState('Good');
 
@@ -64,18 +65,21 @@ export default function Catalog() {
   const [qrCopy, setQrCopy] = useState(null);
 
   const fetchCatalog = () => {
-    setLoading(true);
     api('/api/catalog')
       .then((d) => {
         if (Array.isArray(d)) setRows(d);
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {});
   };
 
   useEffect(() => {
     fetchCatalog();
   }, []);
+
+  const setAndSaveView = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem('catalog_view', mode);
+  };
 
   const genres = Array.from(new Set(rows.map((r) => r.genre).filter(Boolean))).sort();
 
@@ -111,7 +115,6 @@ export default function Catalog() {
   const handleSaveCondition = async () => {
     if (!selectedCopy?.copyCode) return;
     setCondBusy(true);
-    setCondErr('');
     try {
       await api(`/api/copies/${selectedCopy.copyCode}/condition`, {
         method: 'PATCH',
@@ -121,8 +124,7 @@ export default function Catalog() {
       setCondBusy(false);
       setCondOpen(false);
       fetchCatalog();
-    } catch (err) {
-      setCondErr(err.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : err.message || 'Failed to update condition');
+    } catch {
       setCondBusy(false);
     }
   };
@@ -135,18 +137,17 @@ export default function Catalog() {
           <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Inventory & Copies
+              Book Inventory & Physical Copies
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Book Catalog
+            Library Catalog
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage titles, copy barcodes, physical conditions, and shelf availability
+            Explore book titles, inspect copy barcodes, condition ratings, and shelf availability
           </p>
         </div>
 
-        <div className="flex gap-2">
         <Button
           onClick={() => setAddOpen(true)}
           className="rounded-xl shadow-primary-sm"
@@ -154,15 +155,14 @@ export default function Catalog() {
           <Plus className="mr-2 h-4 w-4" />
           Add New Book
         </Button>
-        <Button variant="secondary" onClick={() => nav('/catalog/new')} type="button">Add books</Button>
-        </div>
       </div>
 
-      {/* Search & Filter Toolbar */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card md:flex-row md:items-center md:justify-between">
+      {/* Control Toolbar with View Switcher */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card lg:flex-row lg:items-center lg:justify-between">
+        {/* Left: Search input */}
         <div className="relative flex-1 max-w-md">
           <Input
-            placeholder="Search by title, author, or copy code…"
+            placeholder="Search by title, author, or copy barcode…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-9 text-sm"
@@ -178,13 +178,14 @@ export default function Catalog() {
           )}
         </div>
 
+        {/* Right: Filters & View Switcher */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Status Pills */}
+          {/* Status Tabs */}
           <div className="flex items-center rounded-xl border border-border/70 bg-muted/40 p-1">
             <button
               onClick={() => setStatusFilter('')}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                statusFilter === '' ? 'bg-card text-foreground shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'
+                statusFilter === '' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               All ({rows.length})
@@ -192,7 +193,7 @@ export default function Catalog() {
             <button
               onClick={() => setStatusFilter('Available')}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                statusFilter === 'Available' ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'
+                statusFilter === 'Available' ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Available
@@ -200,14 +201,14 @@ export default function Catalog() {
             <button
               onClick={() => setStatusFilter('On loan')}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                statusFilter === 'On loan' ? 'bg-card text-primary shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'
+                statusFilter === 'On loan' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               On Loan
             </button>
           </div>
 
-          {/* Genre filter selector */}
+          {/* Genre Dropdown */}
           {genres.length > 0 && (
             <select
               value={genreFilter}
@@ -223,120 +224,232 @@ export default function Catalog() {
             </select>
           )}
 
+          {/* View Mode Toggle: Grid vs Table */}
+          <div className="flex items-center rounded-xl border border-border/70 bg-muted/40 p-1">
+            <button
+              onClick={() => setAndSaveView('grid')}
+              title="Grid Cards View"
+              aria-label="Grid Cards View"
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-card text-primary shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setAndSaveView('table')}
+              title="Data Table View"
+              aria-label="Data Table View"
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                viewMode === 'table'
+                  ? 'bg-card text-primary shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+
           <Badge variant="neutral">
             {list.length} showing
           </Badge>
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
-        {list.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Book Title & Author</TableHead>
-                <TableHead>Copy Code</TableHead>
-                <TableHead>Genre</TableHead>
-                <TableHead>Condition</TableHead>
-                <TableHead>Availability</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.map((r, i) => (
-                <TableRow key={r.copyCode || i} className="group">
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Cover title={r.title} size="md" />
-                      <div className="min-w-0 max-w-[320px]">
-                        <p className="truncate font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
-                          {r.title}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {r.author}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1 font-mono text-xs font-medium text-foreground">
-                      {r.copyCode || '—'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="rounded-full border border-border/60 bg-muted/30 px-2.5 py-0.5 text-xs text-muted-foreground">
-                      {r.genre || 'General'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <button
-                      onClick={() => {
-                        setSelectedCopy(r);
-                        setCondValue(r.condition || 'Good');
-                        setCondErr('');
-                        setCondOpen(true);
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-2 py-0.5 text-xs font-medium transition-colors hover:bg-muted"
-                      title="Click to update condition"
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          r.condition === 'Damaged'
-                            ? 'bg-rose-500'
-                            : r.condition === 'Worn'
-                            ? 'bg-amber-500'
-                            : 'bg-emerald-500'
-                        }`}
-                      />
-                      <span>{r.condition || 'Good'}</span>
-                      <Wrench className="h-3 w-3 text-muted-foreground/60 ml-0.5" />
-                    </button>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={r.status === 'Available' ? 'success' : 'default'}
-                      statusDot={true}
-                    >
-                      {r.status || 'Available'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setQrCopy(r);
-                          setQrOpen(true);
-                        }}
-                        className="h-8 rounded-lg px-2.5 text-xs shadow-xs"
+      {/* Main Content: Grid vs Table */}
+      {list.length > 0 ? (
+        viewMode === 'grid' ? (
+          /* Visual Card Grid View */
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {list.map((r, i) => (
+              <div
+                key={r.copyCode || i}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:border-primary/40 hover:shadow-lifted hover:-translate-y-0.5"
+              >
+                <div className="space-y-3.5">
+                  {/* Top Cover and Badges */}
+                  <div className="flex items-start justify-between gap-3">
+                    <Cover title={r.title} size="lg" />
+                    <div className="flex flex-col items-end gap-1.5">
+                      <Badge
+                        variant={r.status === 'Available' ? 'success' : 'default'}
+                        statusDot={true}
                       >
-                        <QrCode className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
-                        QR
-                      </Button>
+                        {r.status || 'Available'}
+                      </Badge>
+                      <span className="rounded-md border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[10px] font-semibold text-foreground">
+                        {r.copyCode || '—'}
+                      </span>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="p-6">
-            <EmptyState
-              icon={BookOpen}
-              title="No books found"
-              description="No titles match your current search query or filter selection."
-              actionText="Reset Search"
-              onAction={() => {
-                setQ('');
-                setStatusFilter('');
-                setGenreFilter('');
-              }}
-            />
+                  </div>
+
+                  {/* Book Metadata */}
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                      {r.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {r.author}
+                    </p>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <span className="rounded-full border border-border/60 bg-muted/30 px-2 py-0.5 text-[10px] text-muted-foreground">
+                        {r.genre || 'General'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Action Footer */}
+                <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between">
+                  {/* Condition button */}
+                  <button
+                    onClick={() => {
+                      setSelectedCopy(r);
+                      setCondValue(r.condition || 'Good');
+                      setCondOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/20 px-2 py-1 text-[11px] font-semibold text-foreground hover:bg-muted transition-colors"
+                    title="Click to update condition"
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        r.condition === 'Damaged'
+                          ? 'bg-rose-500'
+                          : r.condition === 'Worn'
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
+                      }`}
+                    />
+                    <span>{r.condition || 'Good'}</span>
+                    <Wrench className="h-3 w-3 text-muted-foreground" />
+                  </button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setQrCopy(r);
+                      setQrOpen(true);
+                    }}
+                    className="h-7 text-xs rounded-lg shadow-xs"
+                  >
+                    <QrCode className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                    QR
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        ) : (
+          /* Dense Data Table View */
+          <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Book Title & Author</TableHead>
+                  <TableHead>Copy Code</TableHead>
+                  <TableHead>Genre</TableHead>
+                  <TableHead>Condition</TableHead>
+                  <TableHead>Availability</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {list.map((r, i) => (
+                  <TableRow key={r.copyCode || i} className="group">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Cover title={r.title} size="md" />
+                        <div className="min-w-0 max-w-[320px]">
+                          <p className="truncate font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
+                            {r.title}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {r.author}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1 font-mono text-xs font-medium text-foreground">
+                        {r.copyCode || '—'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="rounded-full border border-border/60 bg-muted/30 px-2.5 py-0.5 text-xs text-muted-foreground">
+                        {r.genre || 'General'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <button
+                        onClick={() => {
+                          setSelectedCopy(r);
+                          setCondValue(r.condition || 'Good');
+                          setCondOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-2 py-0.5 text-xs font-medium transition-colors hover:bg-muted"
+                        title="Click to update condition"
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            r.condition === 'Damaged'
+                              ? 'bg-rose-500'
+                              : r.condition === 'Worn'
+                              ? 'bg-amber-500'
+                              : 'bg-emerald-500'
+                          }`}
+                        />
+                        <span>{r.condition || 'Good'}</span>
+                        <Wrench className="h-3 w-3 text-muted-foreground/60 ml-0.5" />
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={r.status === 'Available' ? 'success' : 'default'}
+                        statusDot={true}
+                      >
+                        {r.status || 'Available'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setQrCopy(r);
+                            setQrOpen(true);
+                          }}
+                          className="h-8 rounded-lg px-2.5 text-xs shadow-xs"
+                        >
+                          <QrCode className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                          QR
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : (
+        <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card">
+          <EmptyState
+            icon={BookOpen}
+            title="No books found"
+            description="No titles match your current search query or filter selection."
+            actionText="Reset Search"
+            onAction={() => {
+              setQ('');
+              setStatusFilter('');
+              setGenreFilter('');
+            }}
+          />
+        </div>
+      )}
 
       {/* Add Book Dialog */}
       <Dialog open={addOpen} onClose={() => setAddOpen(false)}>
@@ -449,12 +562,6 @@ export default function Catalog() {
 
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Select physical grading for this copy:</p>
-            {condErr && (
-              <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-50 p-3 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" role="alert">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{condErr}</span>
-              </div>
-            )}
             <div className="grid grid-cols-3 gap-2">
               {['Good', 'Worn', 'Damaged'].map((c) => (
                 <button
