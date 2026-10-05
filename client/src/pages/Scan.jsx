@@ -399,10 +399,10 @@ export default function Scan() {
                         <video ref={cam.v} className="h-full w-full object-cover" />
                         {/* Target Crosshair Corners */}
                         <div className="absolute inset-8 pointer-events-none">
-                          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary rounded-tl" />
-                          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary rounded-tr" />
-                          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary rounded-bl" />
-                          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary rounded-br" />
+                          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary rounded-tl transition-all animate-pulse" />
+                          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary rounded-tr transition-all animate-pulse" />
+                          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary rounded-bl transition-all animate-pulse" />
+                          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary rounded-br transition-all animate-pulse" />
                           <div className="absolute left-0 right-0 h-0.5 bg-primary/90 shadow-[0_0_12px_hsl(var(--primary))] animate-laser-scan" />
                         </div>
 
@@ -601,14 +601,20 @@ export default function Scan() {
 
             <div className="space-y-4">
               {/* Slot 1: Patron Dock */}
-              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-2">
+              <div
+                className={`rounded-2xl border p-4 space-y-2 transition-all duration-200 ${
+                  patron
+                    ? 'border-emerald-500/50 bg-emerald-50/20 dark:bg-emerald-950/20 shadow-xs animate-in zoom-in-95 duration-150'
+                    : 'border-border/60 bg-muted/20'
+                }`}
+              >
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold uppercase tracking-wider">Slot 1 · Patron Pass</span>
                   {patron ? <Badge variant="success" statusDot={true}>Active</Badge> : <Badge variant="neutral">Standby</Badge>}
                 </div>
                 {patron ? (
                   <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-xs">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-xs animate-in zoom-in-90 duration-150">
                       {patron.name[0]}
                     </span>
                     <div className="min-w-0">
@@ -622,7 +628,13 @@ export default function Scan() {
               </div>
 
               {/* Slot 2: Book Copy Dock */}
-              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-2">
+              <div
+                className={`rounded-2xl border p-4 space-y-2 transition-all duration-200 ${
+                  book
+                    ? 'border-blue-500/50 bg-blue-50/20 dark:bg-blue-950/20 shadow-xs animate-in zoom-in-95 duration-150'
+                    : 'border-border/60 bg-muted/20'
+                }`}
+              >
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold uppercase tracking-wider">Slot 2 · Book Copy</span>
                   {book ? <Badge variant="info" statusDot={true}>Mounted</Badge> : <Badge variant="neutral">Standby</Badge>}
