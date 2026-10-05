@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   Award,
@@ -20,6 +21,7 @@ import {
   ShieldCheck,
   User,
   UserCheck,
+  UserPlus,
   Users,
   X,
 } from 'lucide-react';
@@ -39,6 +41,23 @@ import {
   TableHead,
   TableCell,
 } from '../components/ui/table.jsx';
+
+function downscale(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      const s = 128 / Math.max(img.width, img.height);
+      c.width = Math.round(img.width * s);
+      c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      resolve(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
 
 function PatronsCardSkeleton() {
   return (
@@ -115,12 +134,70 @@ function PatronsTableSkeleton() {
 }
 
 export default function Patrons() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [qr, setQr] = useState(null);
   const [prof, setProf] = useState(null);
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('patrons_view') || 'cards');
+  const [editing, setEditing] = useState(null);
+  const [editError, setEditError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const setEdit = (k) => (e) => setEditing({ ...editing, [k]: e.target.value });
+
+  const openEdit = (p) => {
+    setEditError('');
+    setEditing({
+      code: p.code,
+      name: p.name || '',
+      firstName: p.firstName || '',
+      middleName: p.middleName || '',
+      lastName: p.lastName || '',
+      email: p.email || '',
+      contact: p.contact || '',
+      contact2: p.contact2 || '',
+      addrStreet: p.addrStreet || '',
+      addrBarangay: p.addrBarangay || '',
+      addrCity: p.addrCity || '',
+      addrProvince: p.addrProvince || '',
+      addrPostal: p.addrPostal || '',
+      avatar: p.avatar || null,
+    });
+  };
+
+  const pickEdit = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const dataUrl = await downscale(file);
+      if (dataUrl.length > 50000) { setEditError('Picture still too large after shrink.'); return; }
+      setEditing({ ...editing, avatar: dataUrl });
+    } catch { setEditError('Could not read that image.'); }
+  };
+
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    setEditError('');
+    if (!String(editing.firstName || '').trim() || !String(editing.lastName || '').trim()) {
+      setEditError('First and last name are required.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const body = {};
+      for (const [k, v] of Object.entries(editing)) body[k] = k === 'avatar' ? v : String(v || '').trim();
+      await api('/api/patrons/' + editing.code, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      setEditing(null);
+      setEditError('');
+      const d = await api('/api/patrons');
+      if (Array.isArray(d)) setRows(d);
+    } catch (err) {
+      setEditError(err.message || 'Failed to save member.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     api('/api/patrons')
@@ -137,7 +214,7 @@ export default function Patrons() {
   };
 
   const list = rows.filter((p) =>
-    (p.code + ' ' + p.name + ' ' + (p.contact || '')).toLowerCase().includes(q.toLowerCase())
+    (p.code + ' ' + p.name + ' ' + (p.contact || '') + ' ' + (p.contact2 || '') + ' ' + (p.email || '') + ' ' + (p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase().includes(q.toLowerCase())
   );
 
   return (
@@ -163,6 +240,13 @@ export default function Patrons() {
           <Badge variant="neutral">
             {rows.length} Total Members
           </Badge>
+          <Button
+            onClick={() => navigate('/patrons/new')}
+            className="rounded-xl shadow-primary-sm"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Member
+          </Button>
         </div>
       </div>
 
@@ -238,7 +322,7 @@ export default function Patrons() {
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent text-primary font-bold text-base shadow-xs transition-transform duration-200 group-hover:scale-105">
                       {(p.name || 'P')[0].toUpperCase()}
                     </span>
-                    <Badge variant="success" statusDot={true} className="text-[10px]">
+                    <Badge variant="success"  className="text-[10px]">
                       Active
                     </Badge>
                   </div>
@@ -305,9 +389,13 @@ export default function Patrons() {
                   <TableRow key={p.code} className="group">
                     <TableCell>
                       <div className="flex items-center gap-3">
+                        {p.avatar ? (
+                          <img src={p.avatar} alt={`${p.name} photo`} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+                        ) : (
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm transition-transform duration-200 group-hover:scale-105">
                           {(p.name || 'P')[0].toUpperCase()}
                         </span>
+                        )}
                         <div className="min-w-0 max-w-[280px]">
                           <p className="truncate font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
                             {p.name}
@@ -324,12 +412,12 @@ export default function Patrons() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs text-muted-foreground">
-                        {p.contact || 'No contact on file'}
-                      </span>
+                      <span className="block text-xs text-muted-foreground">{p.contact || 'No contact on file'}</span>
+                      {p.contact2 && <span className="block text-xs text-muted-foreground">{p.contact2}</span>}
+                      {p.email && <span className="block text-xs text-muted-foreground">{p.email}</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="success" statusDot={true}>
+                      <Badge variant="success" >
                         Active
                       </Badge>
                     </TableCell>
@@ -344,6 +432,7 @@ export default function Patrons() {
                           <QrCode className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
                           Library Card
                         </Button>
+                        <Button size="sm" variant="outline" onClick={() => openEdit(p)}>Edit</Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -474,7 +563,7 @@ export default function Patrons() {
             <div className="rounded-2xl border border-border/70 bg-muted/20 p-4 space-y-2.5 text-xs">
               <div className="flex justify-between py-1 border-b border-border/40">
                 <span className="text-muted-foreground">Member Status</span>
-                <Badge variant="success" statusDot={true}>Active Good Standing</Badge>
+                <Badge variant="success" >Active Good Standing</Badge>
               </div>
               <div className="flex justify-between py-1 border-b border-border/40">
                 <span className="text-muted-foreground">Contact Phone / Email</span>
@@ -496,6 +585,189 @@ export default function Patrons() {
               </Button>
             </div>
           </div>
+        )}
+      </Dialog>
+
+      {/* Edit Member Dialog */}
+      <Dialog open={!!editing} onClose={() => { setEditing(null); setEditError(''); }}>
+        {editing && (
+          <form onSubmit={saveEdit} className="space-y-5">
+            <h3 className="text-base font-bold text-foreground">Edit Member {editing.code}</h3>
+            {editError && (
+              <div
+                className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-50 p-3.5 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                role="alert"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  First Name <span className="text-rose-500">*</span>
+                </label>
+                <Input
+                  required
+                  placeholder="e.g. Juan"
+                  value={editing.firstName}
+                  onChange={setEdit('firstName')}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Middle Name
+                </label>
+                <Input
+                  placeholder="e.g. Santos"
+                  value={editing.middleName}
+                  onChange={setEdit('middleName')}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Last Name <span className="text-rose-500">*</span>
+                </label>
+                <Input
+                  required
+                  placeholder="e.g. Dela Cruz"
+                  value={editing.lastName}
+                  onChange={setEdit('lastName')}
+                  className="text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Email
+              </label>
+              <Input
+                type="email"
+                placeholder="e.g. juan@example.com"
+                value={editing.email}
+                onChange={setEdit('email')}
+                className="text-sm"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Contact
+                </label>
+                <Input
+                  placeholder="e.g. +63 900 000 0000"
+                  value={editing.contact}
+                  onChange={setEdit('contact')}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Secondary Contact
+                </label>
+                <Input
+                  placeholder="e.g. +63 900 000 0001"
+                  value={editing.contact2}
+                  onChange={setEdit('contact2')}
+                  className="text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Street / House No.
+              </label>
+              <Input
+                placeholder="e.g. 123 Rizal St."
+                value={editing.addrStreet}
+                onChange={setEdit('addrStreet')}
+                className="text-sm"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Barangay
+                </label>
+                <Input
+                  value={editing.addrBarangay}
+                  onChange={setEdit('addrBarangay')}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  City / Municipality
+                </label>
+                <Input
+                  value={editing.addrCity}
+                  onChange={setEdit('addrCity')}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Province
+                </label>
+                <Input
+                  value={editing.addrProvince}
+                  onChange={setEdit('addrProvince')}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Postal Code
+                </label>
+                <Input
+                  value={editing.addrPostal}
+                  onChange={setEdit('addrPostal')}
+                  className="text-sm font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Photo
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-border/80 bg-muted/40">
+                  {editing.avatar ? (
+                    <img src={editing.avatar} alt="Member photo preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-bold text-muted-foreground">?</span>
+                  )}
+                </div>
+                <input type="file" accept="image/*" onChange={pickEdit} className="text-sm file:mr-3 file:rounded-lg file:border file:border-input file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-foreground hover:file:bg-accent focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-ring/40" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 border-t border-border/50 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setEditing(null); setEditError(''); }}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={saving}
+                className="rounded-xl shadow-primary-sm"
+              >
+                {saving ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
+          </form>
         )}
       </Dialog>
     </div>
