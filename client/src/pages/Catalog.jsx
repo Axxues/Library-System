@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   BookOpen,
@@ -34,6 +35,7 @@ import {
 } from '../components/ui/table.jsx';
 
 export default function Catalog() {
+  const nav = useNavigate();
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -141,6 +143,7 @@ export default function Catalog() {
           </p>
         </div>
 
+        <div className="flex gap-2">
         <Button
           onClick={() => setAddOpen(true)}
           className="rounded-xl shadow-primary-sm"
@@ -148,6 +151,8 @@ export default function Catalog() {
           <Plus className="mr-2 h-4 w-4" />
           Add New Book
         </Button>
+        <Button variant="secondary" onClick={() => nav('/catalog/new')} type="button">Add books</Button>
+        </div>
       </div>
 
       {/* Search & Filter Toolbar */}
