@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { Cover } from '../cover.jsx';
-import { Card, CardDescription } from '../components/ui/card.jsx';
 import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table.jsx';

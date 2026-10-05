@@ -17,9 +17,9 @@ export default function Loans() {
     <div className="mb-5"><h2 className="heading-2">Borrowing activity</h2><p className="text-sm text-muted-foreground">Every checkout and return, with overdue flagged automatically.</p></div>
     <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover">
       <div className="mb-3 flex items-center gap-2">
-        <Button variant="secondary" onClick={() => load('')}>All ({counts.all})</Button>
-        <Button variant="secondary" onClick={() => load('active')}>Active ({counts.active})</Button>
-        <Button variant="secondary" onClick={() => load('overdue')}>Overdue ({counts.overdue})</Button>
+        <Button variant="secondary" aria-pressed={f === ''} onClick={() => load('')}>All ({counts.all})</Button>
+        <Button variant="secondary" aria-pressed={f === 'active'} onClick={() => load('active')}>Active ({counts.active})</Button>
+        <Button variant="secondary" aria-pressed={f === 'overdue'} onClick={() => load('overdue')}>Overdue ({counts.overdue})</Button>
         <Badge variant="default">{rows.length} shown</Badge>
       </div>
       <div className="grid gap-4">{Object.entries(groups).map(([day, ls]) => <div key={day}><div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{day}</div>{ls.map((l) => <div key={l.id} className="flex items-center gap-2 border-t border-border py-2 text-sm"><span className="min-w-0 flex-1"><span className="font-mono text-xs">{l.patronCode}</span> → {l.title || l.copyCode}<br /><span className="text-xs text-muted-foreground">{fmt(l.checkoutAt)} – {fmt(l.dueAt)} · returned {fmt(l.returnAt)}</span></span>{l.returnAt ? <Badge variant="success">Returned</Badge> : new Date(l.dueAt) < new Date() ? <Badge variant="destructive">Overdue</Badge> : <Badge variant="default">Borrowed</Badge>}</div>)}</div>)}</div>
