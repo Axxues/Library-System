@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import { Badge } from '../components/ui/badge.jsx';
+import { Button } from '../components/ui/button.jsx';
+import { Input } from '../components/ui/input.jsx';
 const swatches = ['#175E3C', '#f97316', '#5e6ad2', '#0284c7'];
 export default function Settings() {
   const [accent, setAccent] = useState(localStorage.getItem('accent') || '');
@@ -51,33 +54,33 @@ export default function Settings() {
     } catch { setMsg('Password wrong.'); }
   };
   return (<div>
-    <div className="crumbs">Dashboard / Settings</div>
-    <div className="page-head"><h2>Settings</h2><p>Appearance, password, and two-factor sign-in.</p></div>
-    {msg && <div className="card" style={{ marginBottom: 16 }}>{msg}</div>}
-    <div className="grid two">
-      <div className="card"><h3>Appearance</h3><p className="desc">System accent. Applies instantly.</p>
-        <div className="row" style={{ marginBottom: 12 }}>
+    <p className="mb-1.5 text-xs text-muted-foreground">Dashboard / Settings</p>
+    <div className="mb-5"><h2 className="heading-2">Settings</h2><p className="text-sm text-muted-foreground">Appearance, password, and two-factor sign-in.</p></div>
+    {msg && <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover mb-4 text-sm">{msg}</div>}
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Appearance</h3><p className="text-sm text-muted-foreground">System accent. Applies instantly.</p>
+        <div className="mb-3 flex items-center gap-2">
           {swatches.map((s) => <button key={s} title={s} onClick={() => apply(s)} style={{ width: 36, height: 36, borderRadius: '50%', padding: 0, background: s, border: accent === s ? '3px solid var(--ink)' : '1px solid var(--line)' }} />)}
           <input type="color" value={accent || '#175E3C'} onChange={(e) => apply(e.target.value)} style={{ width: 44, height: 36, padding: 2 }} />
         </div>
-        <div className="actions"><button onClick={saveAccent}>Save appearance</button><button className="secondary" onClick={async () => { apply(''); localStorage.removeItem('accent'); try { await api('/api/settings/accent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accent: null }) }); } catch {} }}>Reset</button></div>
+        <div className="mt-3.5 flex gap-2"><Button onClick={saveAccent}>Save appearance</Button><Button variant="secondary" onClick={async () => { apply(''); localStorage.removeItem('accent'); try { await api('/api/settings/accent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accent: null }) }); } catch {} }}>Reset</Button></div>
       </div>
-      <div className="card"><h3>Password</h3><p className="desc">Min 6 characters.</p>
-        <div className="field"><label>Current</label><input type="password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} /></div>
-        <div className="field"><label>New</label><input type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></div>
-        <div className="field"><label>Confirm new</label><input type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></div>
-        <div className="actions"><button onClick={savePw}>Change password</button></div>
+      <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Password</h3><p className="text-sm text-muted-foreground">Min 6 characters.</p>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Current</label><Input type="password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">New</label><Input type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Confirm new</label><Input type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></div>
+        <div className="mt-3.5 flex gap-2"><Button onClick={savePw}>Change password</Button></div>
       </div>
     </div>
-    <div className="card" style={{ marginTop: 16 }}><h3>Two-factor authentication</h3>
-      <p className="desc">Status: {totp.enabled ? <span className="pill ok">On</span> : <span className="pill">Off</span>}</p>
-      {!totp.enabled && !totp.qr && <div className="actions"><button onClick={setupTotp}>Enable with authenticator app</button></div>}
+    <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover mt-4"><h3 className="font-semibold">Two-factor authentication</h3>
+      <p className="text-sm text-muted-foreground">Status: {totp.enabled ? <Badge variant="success">On</Badge> : <Badge variant="default">Off</Badge>}</p>
+      {!totp.enabled && !totp.qr && <div className="mt-3.5 flex gap-2"><Button onClick={setupTotp}>Enable with authenticator app</Button></div>}
       {!totp.enabled && totp.qr && (<div>
-        <p className="desc">Scan with Google/Microsoft Authenticator, then enter the 6-digit code.</p>
+        <p className="text-sm text-muted-foreground">Scan with Google/Microsoft Authenticator, then enter the 6-digit code.</p>
         <img src={totp.qr} alt="totp qr" style={{ width: 180, height: 180 }} />
-        <div className="row" style={{ marginTop: 8 }}><div className="grow" style={{ maxWidth: 160 }}><input value={totp.code} onChange={(e) => setTotp({ ...totp, code: e.target.value })} placeholder="123456" /></div><button onClick={verifyTotp}>Verify</button></div>
+        <div className="mt-2 flex items-center gap-2"><div className="w-40"><Input value={totp.code} onChange={(e) => setTotp({ ...totp, code: e.target.value })} placeholder="123456" /></div><Button onClick={verifyTotp}>Verify</Button></div>
       </div>)}
-      {totp.enabled && <div className="actions"><button className="secondary" onClick={disableTotp}>Disable</button></div>}
+      {totp.enabled && <div className="mt-3.5 flex gap-2"><Button variant="secondary" onClick={disableTotp}>Disable</Button></div>}
     </div>
   </div>);
 }

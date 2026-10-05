@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import { Badge } from '../components/ui/badge.jsx';
+import { Button } from '../components/ui/button.jsx';
+import { Input } from '../components/ui/input.jsx';
 const empty = { firstName: '', middleName: '', lastName: '', dob: '', email: '', phone: '', addrStreet: '', addrBarangay: '', addrCity: '', addrProvince: '', addrPostal: '', avatar: null };
 function downscale(file) {
   return new Promise((resolve, reject) => {
@@ -48,33 +51,33 @@ export default function Profile() {
     } catch (e) { setMsg(e.message === 'unreachable' ? 'Cannot reach the server.' : e.message); }
   };
   return (<div>
-    <div className="crumbs">Dashboard / Profile</div>
-    <div className="page-head"><h2>Profile</h2><p>Your staff details. Role is set by an admin.</p></div>
-    <div className="grid two">
-      <div className="card"><h3>Photo</h3><p className="desc">Square works best; shrunk to 128px on save.</p>
-        <div style={{ marginBottom: 12 }}>{form.avatar ? <img src={form.avatar} alt="preview" style={{ width: 128, height: 128, borderRadius: '50%', objectFit: 'cover' }} /> : <span className="avatar" style={{ width: 64, height: 64, fontSize: 24 }}>?</span>}</div>
-        <input type="file" accept="image/*" onChange={pick} />
+    <p className="mb-1.5 text-xs text-muted-foreground">Dashboard / Profile</p>
+    <div className="mb-5"><h2 className="heading-2">Profile</h2><p className="text-sm text-muted-foreground">Your staff details. Role is set by an admin.</p></div>
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Photo</h3><p className="text-sm text-muted-foreground">Square works best; shrunk to 128px on save.</p>
+        <div className="mb-3">{form.avatar ? <img src={form.avatar} alt="preview" style={{ width: 128, height: 128, borderRadius: '50%', objectFit: 'cover' }} /> : <span className="flex items-center justify-center rounded-full bg-secondary text-muted-foreground" style={{ width: 64, height: 64, fontSize: 24 }}>?</span>}</div>
+        <input type="file" accept="image/*" onChange={pick} className="text-sm" />
       </div>
-      <div className="card"><h3>Identity</h3>
-        <div className="field"><label>First name</label><input value={form.firstName} onChange={set('firstName')} /></div>
-        <div className="field"><label>Middle name</label><input value={form.middleName} onChange={set('middleName')} /></div>
-        <div className="field"><label>Last name</label><input value={form.lastName} onChange={set('lastName')} /></div>
-        <div className="field"><label>Date of birth</label><input type="date" value={form.dob} onChange={set('dob')} /></div>
-        <div className="field"><label>Email</label><input value={form.email} onChange={set('email')} /></div>
-        <div className="field"><label>Phone</label><input value={form.phone} onChange={set('phone')} /></div>
-        <div className="field"><label>Role</label><div><span className="pill busy">{role || '—'}</span></div></div>
+      <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover"><h3 className="font-semibold">Identity</h3>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">First name</label><Input value={form.firstName} onChange={set('firstName')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Middle name</label><Input value={form.middleName} onChange={set('middleName')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Last name</label><Input value={form.lastName} onChange={set('lastName')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Date of birth</label><Input type="date" value={form.dob} onChange={set('dob')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Email</label><Input value={form.email} onChange={set('email')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Phone</label><Input value={form.phone} onChange={set('phone')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Role</label><div><Badge variant="default">{role || '—'}</Badge></div></div>
       </div>
     </div>
-    <div className="card" style={{ marginTop: 16 }}><h3>Address</h3><p className="desc">One value per field.</p>
-      <div className="field"><label>Street</label><input value={form.addrStreet} onChange={set('addrStreet')} /></div>
-      <div className="grid two">
-        <div className="field"><label>Barangay</label><input value={form.addrBarangay} onChange={set('addrBarangay')} /></div>
-        <div className="field"><label>City / Municipality</label><input value={form.addrCity} onChange={set('addrCity')} /></div>
-        <div className="field"><label>Province</label><input value={form.addrProvince} onChange={set('addrProvince')} /></div>
-        <div className="field"><label>Postal code</label><input value={form.addrPostal} onChange={set('addrPostal')} /></div>
+    <div className="bg-card text-card-foreground rounded-xl border shadow-card p-6 card-hover mt-4"><h3 className="font-semibold">Address</h3><p className="text-sm text-muted-foreground">One value per field.</p>
+      <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Street</label><Input value={form.addrStreet} onChange={set('addrStreet')} /></div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Barangay</label><Input value={form.addrBarangay} onChange={set('addrBarangay')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">City / Municipality</label><Input value={form.addrCity} onChange={set('addrCity')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Province</label><Input value={form.addrProvince} onChange={set('addrProvince')} /></div>
+        <div className="mb-3"><label className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">Postal code</label><Input value={form.addrPostal} onChange={set('addrPostal')} /></div>
       </div>
-      <div className="actions"><button onClick={save}>Save profile</button></div>
-      {msg && (msg === 'Saved.' ? <span className="stamp ok">Saved</span> : <div className="alert" style={{ borderColor: msg === 'Saved.' ? 'var(--success)' : undefined, color: msg === 'Saved.' ? 'var(--success)' : undefined }}>{msg}</div>)}
+      <div className="mt-3.5 flex gap-2"><Button onClick={save}>Save profile</Button></div>
+      {msg && (msg === 'Saved.' ? <Badge variant="success" className="mt-3">Saved</Badge> : <div className="mt-3 rounded-lg border border-destructive bg-destructive/10 p-2 px-3 text-sm text-destructive">{msg}</div>)}
     </div>
   </div>);
 }

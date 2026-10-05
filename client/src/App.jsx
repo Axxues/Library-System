@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { BookOpen, ClipboardList, QrCode, ScanLine, Search as SearchIcon, Users } from 'lucide-react';
 import Login from './pages/Login.jsx';
 import Desk from './pages/Desk.jsx';
 import Scan from './pages/Scan.jsx';
@@ -12,14 +11,6 @@ import Profile from './pages/Profile.jsx';
 import Settings from './pages/Settings.jsx';
 import { Layout } from './layouts/Layout.jsx';
 const gated = (el) => (localStorage.getItem('token') ? el : <Navigate to="/login" />);
-const links = [
-  { to: '/desk', label: 'Desk', Icon: ScanLine },
-  { to: '/scan', label: 'Scan', Icon: QrCode },
-  { to: '/catalog', label: 'Books', Icon: BookOpen },
-  { to: '/patrons', label: 'Members', Icon: Users },
-  { to: '/loans', label: 'Activity', Icon: ClipboardList },
-  { to: '/lookup', label: 'Lookup', Icon: SearchIcon },
-];
 function logout(nav) {
   localStorage.removeItem('token');
   localStorage.removeItem('staff');
