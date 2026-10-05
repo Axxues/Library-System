@@ -320,7 +320,7 @@ export default function Lookup() {
           <div className="inline-flex rounded-2xl border border-border/70 bg-muted/40 p-1">
             <button
               onClick={() => setActiveTab('catalog')}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
                 activeTab === 'catalog'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -331,7 +331,7 @@ export default function Lookup() {
             </button>
             <button
               onClick={() => setActiveTab('patron')}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
                 activeTab === 'patron'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -348,7 +348,7 @@ export default function Lookup() {
       {/* TAB 1: CATALOG EXPLORER                                                  */}
       {/* ========================================================================= */}
       {activeTab === 'catalog' && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-200">
           {/* Search & Filtering Console */}
           <div className="rounded-3xl border border-border/70 bg-card p-5 shadow-card space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -516,7 +516,7 @@ export default function Lookup() {
                 return (
                   <div
                     key={`${book.title}-${book.author}`}
-                    className="group relative flex flex-col justify-between rounded-3xl border border-border/70 bg-card p-4 shadow-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-hover"
+                    className="group relative flex flex-col justify-between rounded-3xl border border-border/70 bg-card p-4 shadow-card transition-all duration-200 ease-out hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-card-hover"
                   >
                     <div>
                       {/* Top badge bar */}
@@ -535,7 +535,7 @@ export default function Lookup() {
 
                       {/* Cover & Title */}
                       <div className="flex items-start gap-3">
-                        <Cover title={book.title} size="md" className="shrink-0" />
+                        <Cover title={book.title} size="md" className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
                         <div className="min-w-0 flex-1">
                           <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                             {book.title}
@@ -730,7 +730,7 @@ export default function Lookup() {
       {/* TAB 2: PATRON SELF-SERVICE BORROWER PASS                                 */}
       {/* ========================================================================= */}
       {activeTab === 'patron' && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-200">
           {/* Kiosk Input Bar */}
           <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-4">
             <div>

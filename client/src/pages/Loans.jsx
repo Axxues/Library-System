@@ -226,7 +226,7 @@ export default function Loans() {
         <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/70 bg-muted/40 p-1">
           <button
             onClick={() => load('')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.97] ${
               f === '' ? 'bg-card text-foreground font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -234,7 +234,7 @@ export default function Loans() {
           </button>
           <button
             onClick={() => load('active')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.97] ${
               f === 'active' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -242,7 +242,7 @@ export default function Loans() {
           </button>
           <button
             onClick={() => load('overdue')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.97] ${
               f === 'overdue' ? 'bg-card text-rose-600 dark:text-rose-400 font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -250,7 +250,7 @@ export default function Loans() {
           </button>
           <button
             onClick={() => load('returned')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.97] ${
               f === 'returned' ? 'bg-card text-emerald-600 dark:text-emerald-400 font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -279,7 +279,7 @@ export default function Loans() {
       </div>
 
       {/* Main Loans Activity Table */}
-      <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+      <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden animate-in fade-in duration-200">
         {loading ? (
           <LoansTableSkeleton />
         ) : list.length > 0 ? (
