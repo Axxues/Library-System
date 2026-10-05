@@ -174,7 +174,14 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Premium focus ring */
+  /* Visible keyboard focus for shell chrome (components draw their own rings) */
+  nav button:focus-visible,
+  nav a:focus-visible,
+  aside a:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
   *:focus-visible {
     outline: none;
   }
@@ -310,6 +317,31 @@
     animation: pulseRing 1.5s infinite ease-out;
   }
 
+  /* Hover details: CSS-only tooltip driven by data-tip (Desk tiles + trend bars) */
+  /* ponytail: restores the one tooltip the pages actually use */
+  [data-tip] {
+    position: relative;
+  }
+
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+    border: 1px solid hsl(var(--border));
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+  }
+
   /* Subtle glow on interactive */
   .glow-on-hover:hover {
     box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
@@ -380,6 +412,29 @@
 /* Surface utility — one step above background */
 .bg-surface {
   background-color: hsl(var(--surface));
+}
+
+/* Book cover initials tile (Cover component — gradient set inline) */
+/* ponytail: restored from pre-Tailwind theme; only consumer is cover.jsx */
+.cover {
+  width: 38px;
+  height: 52px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px -12px rgb(0 0 0 / 0.18);
+}
+
+.cover.lg {
+  width: 72px;
+  height: 96px;
+  font-size: 22px;
+  border-radius: 10px;
 }
 
 /* =============================================
@@ -475,6 +530,37 @@ table, thead, tbody, tr, td {
 .content-auto {
   content-visibility: auto;
   contain-intrinsic-size: 0 500px;
+}
+
+/* =============================================
+   SCANNER & INTERACTION ANIMATIONS
+   ============================================= */
+
+@keyframes laserScan {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 95%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+.animate-laser-scan {
+  animation: laserScan 2.4s ease-in-out infinite;
+}
+
+.scanner-crosshair {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: hsl(var(--primary));
+  pointer-events: none;
 }
 
 /* =============================================
