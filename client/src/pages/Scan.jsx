@@ -541,6 +541,12 @@ export default function Scan() {
                     <span className="text-muted-foreground text-xs">Due Date</span>
                     <span className="font-mono font-bold text-primary">{due}</span>
                   </div>
+                  {out.condition && (
+                    <div className="flex justify-between py-1.5 border-b border-border/40">
+                      <span className="text-muted-foreground text-xs">Copy Condition</span>
+                      <Badge variant={out.condition === 'Good' ? 'success' : out.condition === 'Worn' ? 'warning' : 'destructive'}>{out.condition}</Badge>
+                    </div>
+                  )}
                 </div>
 
                 {Array.isArray(out?.recommendations) && out.recommendations.length > 0 && (
