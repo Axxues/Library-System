@@ -20,6 +20,7 @@ import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { EmptyState } from '../components/ui/empty-state.jsx';
+import { Skeleton, SkeletonCover } from '../components/ui/skeleton.jsx';
 import {
   Table,
   TableHeader,
@@ -58,14 +59,66 @@ function getDueInfo(dueAt, returnAt) {
   return { text: `Due in ${diffDays} days`, variant: 'neutral', status: 'Borrowed' };
 }
 
+function LoansTableSkeleton() {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Borrower</TableHead>
+          <TableHead>Book Title & Copy</TableHead>
+          <TableHead>Checkout Date</TableHead>
+          <TableHead>Due Date / Timeline</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Action</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <TableRow key={i}>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-9 rounded-xl" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-4 w-28 rounded" />
+                  <Skeleton className="h-3 w-16 rounded font-mono" />
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <SkeletonCover size="sm" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-4 w-40 rounded" />
+                  <Skeleton className="h-3 w-20 rounded font-mono" />
+                </div>
+              </div>
+            </TableCell>
+            <TableCell><Skeleton className="h-4 w-24 rounded" /></TableCell>
+            <TableCell>
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </div>
+            </TableCell>
+            <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+            <TableCell className="text-right"><Skeleton className="h-8 w-20 rounded-xl ml-auto" /></TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
 export default function Loans() {
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [f, setF] = useState('');
   const [q, setQ] = useState('');
   const [counts, setCounts] = useState({ all: 0, active: 0, overdue: 0, returned: 0 });
   const [actionBusy, setActionBusy] = useState(null);
 
   const load = (status) => {
+    setLoading(true);
     let url = '/api/loans';
     if (status === 'active') url = '/api/loans?status=active';
     else if (status === 'overdue') url = '/api/loans?status=overdue';
@@ -81,7 +134,8 @@ export default function Loans() {
         }
         setF(status);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   const refreshCounts = () => {
@@ -226,7 +280,9 @@ export default function Loans() {
 
       {/* Main Loans Activity Table */}
       <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
-        {list.length > 0 ? (
+        {loading ? (
+          <LoansTableSkeleton />
+        ) : list.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
