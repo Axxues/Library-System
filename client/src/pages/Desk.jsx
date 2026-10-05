@@ -387,7 +387,7 @@ export default function Desk() {
                 {/* Gradient Bar */}
                 <div className="relative w-full flex items-end justify-center">
                   <div
-                    className={`w-full max-w-[46px] rounded-t-xl transition-all duration-300 group-hover:scale-105 ${
+                    className={`w-full max-w-[46px] rounded-t-xl transition-all duration-500 ease-out group-hover:scale-105 group-hover:brightness-110 ${
                       isPeak
                         ? 'bg-gradient-to-t from-primary via-blue-500 to-blue-400 shadow-primary-sm'
                         : 'bg-muted/70 hover:bg-muted'
@@ -523,7 +523,7 @@ export default function Desk() {
                 </div>
               ) : (
                 overdue.map((l) => (
-                  <div key={l.id} className="py-3 first:pt-1 last:pb-1 space-y-2">
+                  <div key={l.id} className="rounded-2xl border border-border/50 bg-muted/20 p-3 space-y-2 transition-all duration-150 hover:bg-muted/40 hover:border-amber-500/30">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <Cover title={l.title} size="sm" />
