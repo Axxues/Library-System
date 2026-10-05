@@ -33,3 +33,17 @@ test('POST /api/catalog rejects missing title and bad copies', async () => {
   const bad2 = await fetch(BASE + '/api/catalog', { method: 'POST', headers: H, body: JSON.stringify({ title: 'X', author: 'QA', genre: 'Test', copies: 51 }) });
   assert.strictEqual(bad2.status, 400);
 });
+test('PATCH condition round-trips and GET exposes it', async () => {
+  const H = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await login() };
+  const created = await (await fetch(BASE + '/api/catalog', { method: 'POST', headers: H, body: JSON.stringify({ title: 'Cond Book ' + Date.now(), author: 'QA', genre: 'Test', copies: 1 }) })).json();
+  const code = created.copies[0].copyCode;
+  const set = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Damaged' }) });
+  assert.strictEqual(set.status, 200);
+  assert.deepStrictEqual(await set.json(), { copyCode: code, condition: 'Damaged' });
+  const cat = await (await fetch(BASE + '/api/catalog', { headers: { Authorization: 'Bearer ' + await login() } })).json();
+  assert.strictEqual(cat.find((r) => r.copyCode === code).condition, 'Damaged');
+  const bad = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Broken' }) });
+  assert.strictEqual(bad.status, 400);
+  const missing = await fetch(BASE + '/api/copies/NOPE-000/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Good' }) });
+  assert.strictEqual(missing.status, 404);
+});

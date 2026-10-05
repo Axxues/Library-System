@@ -24,7 +24,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 app.get('/api/catalog', auth, async (req, res) => {
   const pool = await getPool();
-  const r = await pool.request().query('SELECT b.id, b.title, b.author, b.genre, c.copyCode, c.status FROM Books b LEFT JOIN BookCopies c ON c.bookId=b.id ORDER BY b.title');
+  const r = await pool.request().query('SELECT b.id, b.title, b.author, b.genre, c.copyCode, c.status, c.condition FROM Books b LEFT JOIN BookCopies c ON c.bookId=b.id ORDER BY b.title');
   res.json(r.recordset);
 });
 app.post('/api/catalog', auth, async (req, res) => {
@@ -64,6 +64,14 @@ app.post('/api/catalog', auth, async (req, res) => {
     res.json({ book: { id: bookId, title, author, genre, classification: classification || null }, copies: out });
   } catch (e) { try { await tx.rollback(); } catch {} res.status(500).json({ error: 'could not allocate copy codes' }); }
 });
+app.patch('/api/copies/:code/condition', auth, async (req, res) => {
+  const { condition } = req.body || {};
+  if (condition !== 'Good' && condition !== 'Worn' && condition !== 'Damaged') return res.status(400).json({ error: 'condition must be Good, Worn, or Damaged' });
+  const pool = await getPool();
+  const r = await pool.request().input('c', req.params.code).input('v', condition).query('UPDATE BookCopies SET condition=@v WHERE copyCode=@c');
+  if (r.rowsAffected[0] === 0) return res.status(404).json({ error: 'unknown copy code' });
+  res.json({ copyCode: req.params.code, condition });
+});
 app.get('/api/patrons', auth, async (req, res) => {
   const pool = await getPool();
   res.json((await pool.request().query('SELECT * FROM Patrons ORDER BY code')).recordset);
@@ -96,7 +104,7 @@ app.post('/api/circulation', auth, async (req, res) => {
     await tx.begin();
     const p = (await tx.request().input('c', patronCode).query('SELECT * FROM Patrons WHERE code=@c')).recordset[0];
     if (!p || !p.active) throw new Error('unknown or inactive patron');
-    const cp = (await tx.request().input('c', copyCode).query('SELECT c.id, c.copyCode, c.status, b.id AS bookId FROM BookCopies c JOIN Books b ON b.id=c.bookId WHERE copyCode=@c')).recordset[0];
+    const cp = (await tx.request().input('c', copyCode).query('SELECT c.id, c.copyCode, c.status, c.condition, b.id AS bookId FROM BookCopies c JOIN Books b ON b.id=c.bookId WHERE copyCode=@c')).recordset[0];
     if (!cp) throw new Error('unknown book copy');
     let loan;
     if (action === 'checkout') {
@@ -117,7 +125,7 @@ app.post('/api/circulation', auth, async (req, res) => {
     const ms = Date.now() - t0;
     await tx.request().input('a', action).input('d', `${patronCode}/${copyCode}`).input('m', ms).query('INSERT INTO Logs (action, detail, ms) VALUES (@a,@d,@m)');
     await tx.commit();
-    res.json({ loan, recommendations: recs, ms });
+    res.json({ loan, recommendations: recs, ms, condition: cp.condition });
   } catch (e) { try { await tx.rollback(); } catch {} res.status(400).json({ error: e.message }); }
 });
 app.get('/api/patrons/:code/recommendations', async (req, res) => {
