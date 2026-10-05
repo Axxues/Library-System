@@ -16,6 +16,6 @@ export const buttonVariants = cva(
     },
     defaultVariants: { variant: "default", size: "default" } }
 );
-export function Button({ className, variant, size, ...props }) {
-  return <button data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+export function Button({ className, variant, size, type = "button", ...props }) {
+  return <button data-slot="button" type={type} className={cn(buttonVariants({ variant, size, className }))} {...props} />;
 }
