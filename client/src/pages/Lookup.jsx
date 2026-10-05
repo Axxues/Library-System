@@ -26,6 +26,7 @@ import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { EmptyState } from '../components/ui/empty-state.jsx';
+import { Skeleton, SkeletonCover } from '../components/ui/skeleton.jsx';
 import {
   Table,
   TableHeader,
@@ -65,12 +66,139 @@ function getDueStatus(dueAt) {
   return { label: `Due in ${diffDays}d`, variant: 'neutral' };
 }
 
+function LookupCatalogGridSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col justify-between rounded-3xl border border-border/70 bg-card p-4 shadow-card space-y-4"
+        >
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <Skeleton className="h-4 w-16 rounded-full" />
+              <Skeleton className="h-4 w-20 rounded-full" />
+            </div>
+            <div className="flex items-start gap-3">
+              <SkeletonCover size="md" className="shrink-0" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-3 w-3/4 rounded" />
+                <Skeleton className="h-4 w-20 rounded" />
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-border/50 flex items-center justify-between">
+            <Skeleton className="h-3 w-16 rounded" />
+            <Skeleton className="h-8 w-24 rounded-xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LookupCatalogTableSkeleton() {
+  return (
+    <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Book & Author</TableHead>
+            <TableHead>Genre</TableHead>
+            <TableHead>Shelf Location</TableHead>
+            <TableHead>Availability</TableHead>
+            <TableHead className="text-right">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <SkeletonCover size="sm" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-36 rounded" />
+                    <Skeleton className="h-3 w-20 rounded" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-20 rounded font-mono" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-24 rounded-full" /></TableCell>
+              <TableCell className="text-right"><Skeleton className="h-8 w-20 rounded-xl ml-auto" /></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function LookupPatronPassSkeleton() {
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      {/* Active Loans Card Skeleton */}
+      <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-5">
+        <div className="flex items-center justify-between pb-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-2xl" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-32 rounded" />
+              <Skeleton className="h-3 w-24 rounded font-mono" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-40 rounded" />
+          <div className="rounded-2xl border border-border/60 p-4 space-y-3">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <SkeletonCover size="sm" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-36 rounded" />
+                    <Skeleton className="h-3 w-16 rounded font-mono" />
+                  </div>
+                </div>
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Recommended for You Skeleton */}
+      <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-5">
+        <div className="flex items-center gap-2 pb-4 border-b border-border/50">
+          <Skeleton className="h-9 w-9 rounded-xl" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-32 rounded" />
+            <Skeleton className="h-3 w-48 rounded" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3.5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center rounded-2xl border border-border/70 bg-muted/20 p-3.5 space-y-3">
+              <SkeletonCover size="md" />
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-2.5 w-16 rounded" />
+              <Skeleton className="h-6 w-full rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Lookup() {
   const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'patron'
 
   // --- Public Catalog Explorer State ---
   const [catalogRows, setCatalogRows] = useState([]);
-  const [loadingCatalog, setLoadingCatalog] = useState(false);
+  const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [catalogQuery, setCatalogQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [availFilter, setAvailFilter] = useState('all'); // 'all' | 'available' | 'borrowed'
@@ -361,7 +489,13 @@ export default function Lookup() {
           </div>
 
           {/* Results Display */}
-          {filteredTitles.length === 0 ? (
+          {loadingCatalog ? (
+            catalogView === 'grid' ? (
+              <LookupCatalogGridSkeleton />
+            ) : (
+              <LookupCatalogTableSkeleton />
+            )
+          ) : filteredTitles.length === 0 ? (
             <div className="rounded-3xl border border-border/70 bg-card p-12 text-center shadow-card">
               <EmptyState
                 icon={BookOpen}
@@ -665,7 +799,9 @@ export default function Lookup() {
           </div>
 
           {/* Results View */}
-          {patronData && !patronData.error && (
+          {patronBusy ? (
+            <LookupPatronPassSkeleton />
+          ) : patronData && !patronData.error ? (
             <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
               {/* Active Loans Card */}
               <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-card space-y-5">
@@ -805,7 +941,7 @@ export default function Lookup() {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
