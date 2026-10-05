@@ -27,6 +27,43 @@ app.get('/api/catalog', auth, async (req, res) => {
   const r = await pool.request().query('SELECT b.id, b.title, b.author, b.genre, c.copyCode, c.status FROM Books b LEFT JOIN BookCopies c ON c.bookId=b.id ORDER BY b.title');
   res.json(r.recordset);
 });
+app.post('/api/catalog', auth, async (req, res) => {
+  const { title, author, genre, classification, copies } = req.body || {};
+  if (!title || !author || !genre) return res.status(400).json({ error: 'title, author, genre required' });
+  const n = Number(copies);
+  if (!Number.isInteger(n) || n < 1 || n > 50) return res.status(400).json({ error: 'copies must be 1-50' });
+  const pool = await getPool(); const tx = pool.transaction();
+  try {
+    await tx.begin();
+    const b = await tx.request().input('t', title).input('a', author).input('g', genre).input('c', classification || null)
+      .query('INSERT INTO Books (title, author, genre, classification) OUTPUT INSERTED.id VALUES (@t,@a,@g,@c)');
+    const bookId = b.recordset[0].id;
+    const maxR = await tx.request().query("SELECT MAX(CAST(SUBSTRING(copyCode, 8, 10) AS INT)) AS m FROM BookCopies WHERE copyCode LIKE 'B-COPY-%'");
+    let next = (maxR.recordset[0].m || 0) + 1;
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const code = 'B-COPY-' + String(next).padStart(3, '0');
+      try {
+        await tx.request().input('c', code).input('b', bookId).query('INSERT INTO BookCopies (copyCode, bookId) VALUES (@c,@b)');
+      } catch (e) {
+        if (e.number === 2627 || e.number === 2601) {
+          const retry = await tx.request().query("SELECT MAX(CAST(SUBSTRING(copyCode, 8, 10) AS INT)) AS m FROM BookCopies WHERE copyCode LIKE 'B-COPY-%'");
+          next = (retry.recordset[0].m || 0) + 1;
+          const code2 = 'B-COPY-' + String(next).padStart(3, '0');
+          await tx.request().input('c', code2).input('b', bookId).query('INSERT INTO BookCopies (copyCode, bookId) VALUES (@c,@b)');
+          out.push({ copyCode: code2, qrUrl: '/api/qr/' + code2 });
+          next++;
+          continue;
+        }
+        throw e;
+      }
+      out.push({ copyCode: code, qrUrl: '/api/qr/' + code });
+      next++;
+    }
+    await tx.commit();
+    res.json({ book: { id: bookId, title, author, genre, classification: classification || null }, copies: out });
+  } catch (e) { try { await tx.rollback(); } catch {} res.status(500).json({ error: 'could not allocate copy codes' }); }
+});
 app.get('/api/patrons', auth, async (req, res) => {
   const pool = await getPool();
   res.json((await pool.request().query('SELECT * FROM Patrons ORDER BY code')).recordset);
