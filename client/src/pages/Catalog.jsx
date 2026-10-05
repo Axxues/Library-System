@@ -338,16 +338,16 @@ export default function Catalog() {
       ) : list.length > 0 ? (
         viewMode === 'grid' ? (
           /* Visual Card Grid View */
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-in fade-in duration-200">
             {list.map((r, i) => (
               <div
                 key={r.copyCode || i}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:border-primary/40 hover:shadow-lifted hover:-translate-y-0.5"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 ease-out hover:border-primary/50 hover:shadow-card-hover hover:-translate-y-1"
               >
                 <div className="space-y-3.5">
                   {/* Top Cover and Badges */}
                   <div className="flex items-start justify-between gap-3">
-                    <Cover title={r.title} size="lg" />
+                    <Cover title={r.title} size="lg" className="transition-transform duration-200 group-hover:scale-105" />
                     <div className="flex flex-col items-end gap-1.5">
                       <Badge
                         variant={r.status === 'Available' ? 'success' : 'default'}
@@ -420,7 +420,7 @@ export default function Catalog() {
           </div>
         ) : (
           /* Dense Data Table View */
-          <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+          <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden animate-in fade-in duration-200">
             <Table>
               <TableHeader>
                 <TableRow>
