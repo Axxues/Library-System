@@ -226,16 +226,16 @@ export default function Patrons() {
       ) : list.length > 0 ? (
         viewMode === 'cards' ? (
           /* Member Pass Cards Grid View */
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-in fade-in duration-200">
             {list.map((p) => (
               <div
                 key={p.code}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:border-primary/40 hover:shadow-lifted hover:-translate-y-0.5"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 ease-out hover:border-primary/50 hover:shadow-card-hover hover:-translate-y-1"
               >
                 <div className="space-y-4">
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent text-primary font-bold text-base shadow-xs">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent text-primary font-bold text-base shadow-xs transition-transform duration-200 group-hover:scale-105">
                       {(p.name || 'P')[0].toUpperCase()}
                     </span>
                     <Badge variant="success" statusDot={true} className="text-[10px]">
@@ -289,7 +289,7 @@ export default function Patrons() {
           </div>
         ) : (
           /* Dense Directory Table View */
-          <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden">
+          <div className="rounded-3xl border border-border/70 bg-card shadow-card overflow-hidden animate-in fade-in duration-200">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -305,7 +305,7 @@ export default function Patrons() {
                   <TableRow key={p.code} className="group">
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm transition-transform duration-200 group-hover:scale-105">
                           {(p.name || 'P')[0].toUpperCase()}
                         </span>
                         <div className="min-w-0 max-w-[280px]">
