@@ -15,7 +15,7 @@ import {
   Sparkles,
   Tag,
 } from 'lucide-react';
-import { api } from '../api.js';
+import { api, API_BASE } from '../api.js';
 import { Cover, fileToCoverDataUrl } from '../cover.jsx';
 import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
@@ -198,7 +198,7 @@ export default function AddBook() {
                 <div className="flex items-center gap-3">
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-white p-1 shadow-xs">
                     <img
-                      src={`http://localhost:4000${copy.qrUrl}`}
+                      src={`${API_BASE}${copy.qrUrl}`}
                       alt={`QR for ${copy.copyCode}`}
                       className="h-full w-full object-contain"
                     />

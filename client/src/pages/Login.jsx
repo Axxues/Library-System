@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE } from '../api';
 import {
   AlertCircle,
   ArrowRight,
@@ -33,14 +34,14 @@ export default function Login({ theme, setTheme }) {
     setErr('');
     let r;
     try {
-      const res = await fetch('http://localhost:4000/api/auth/login', {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(creds),
       });
       r = await res.json();
     } catch {
-      setErr('Cannot reach the server at localhost:4000 — ensure backend is running.');
+      setErr('Cannot reach the server — ensure backend is running.');
       setBusy(false);
       return;
     }
@@ -64,7 +65,7 @@ export default function Login({ theme, setTheme }) {
     setBusy(true);
     setErr('');
     try {
-      const res = await fetch('http://localhost:4000/api/auth/totp', {
+      const res = await fetch(`${API_BASE}/api/auth/totp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, code }),
@@ -80,7 +81,7 @@ export default function Login({ theme, setTheme }) {
       }
     } catch {
       setBusy(false);
-      setErr('Cannot reach the server at localhost:4000.');
+      setErr('Cannot reach the server.');
     }
   };
 

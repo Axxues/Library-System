@@ -1,4 +1,10 @@
 {
+  "name": "library-system-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node --test"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",

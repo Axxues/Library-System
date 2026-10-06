@@ -8,7 +8,7 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react';
-import { api } from '../api.js';
+import { api, API_BASE } from '../api.js';
 import { Cover } from '../cover.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
@@ -139,7 +139,7 @@ export default function AddPatron() {
           <h3 className="mt-3 font-semibold text-foreground">{result.name}</h3>
           <p className="font-mono text-xs text-muted-foreground">{result.code}</p>
           <img
-            src={`http://localhost:4000/api/qr/${result.code}`}
+            src={`${API_BASE}/api/qr/${result.code}`}
             alt={`Library card QR for ${result.name}`}
             className="mt-4 h-48 w-48 rounded-2xl border border-border/80 bg-white object-contain p-2"
           />

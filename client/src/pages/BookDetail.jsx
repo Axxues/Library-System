@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Printer, QrCode, Wrench } from 'lucide-react';
-import { api } from '../api.js';
+import { api, API_BASE } from '../api.js';
 import { Cover } from '../cover.jsx';
 import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
@@ -203,7 +203,7 @@ export default function BookDetail() {
             <p className="mt-0.5 font-mono text-xs text-muted-foreground">{qrCopy.copyCode}</p>
           </div>
           <div className="mx-auto inline-block rounded-2xl border border-border/80 bg-white p-4 shadow-xs">
-            <img src={`http://localhost:4000/api/qr/${qrCopy.copyCode}`} alt={`QR code for ${qrCopy.copyCode}`} className="h-48 w-48 object-contain" />
+            <img src={`${API_BASE}/api/qr/${qrCopy.copyCode}`} alt={`QR code for ${qrCopy.copyCode}`} className="h-48 w-48 object-contain" />
             <p className="mt-2 font-mono text-xs font-bold text-slate-800">{qrCopy.copyCode}</p>
           </div>
           <div className="flex items-center justify-center gap-3 pt-2">

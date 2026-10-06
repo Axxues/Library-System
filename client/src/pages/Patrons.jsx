@@ -25,7 +25,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { api } from '../api.js';
+import { api, API_BASE } from '../api.js';
 import { Cover } from '../cover.jsx';
 import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
@@ -494,7 +494,7 @@ export default function Patrons() {
               <div className="my-4 flex items-center gap-4">
                 <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white border border-border/80 shadow-xs">
                   <img
-                    src={`http://localhost:4000/api/qr/${qr.code}`}
+                    src={`${API_BASE}/api/qr/${qr.code}`}
                     alt={`Library card QR for ${qr.name}`}
                     className="h-28 w-28 object-contain"
                   />
