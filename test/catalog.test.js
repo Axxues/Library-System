@@ -12,8 +12,9 @@ test('BookCopies has condition column defaulting to Good', async () => {
   const cols = await pool.request().query("SELECT COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='BookCopies' AND COLUMN_NAME='condition'");
   assert.ok(cols.recordset.length === 1, 'condition column exists');
   assert.match(cols.recordset[0].COLUMN_DEFAULT, /Good/);
-  const seeded = await pool.request().query('SELECT DISTINCT condition FROM BookCopies');
-  assert.deepStrictEqual(seeded.recordset.map((r) => r.condition), ['Good']);
+  const chk = await pool.request().query("SELECT definition FROM sys.check_constraints WHERE parent_object_id = OBJECT_ID('BookCopies')");
+  assert.ok(chk.recordset.length >= 1, 'condition CHECK exists');
+  assert.ok(chk.recordset.some((r) => /Good/.test(r.definition) && /Worn/.test(r.definition) && /Damaged/.test(r.definition)), 'condition CHECK covers Good/Worn/Damaged');
 });
 test('POST /api/catalog creates book with N coded copies', async () => {
   const H = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await login() };
@@ -40,13 +41,31 @@ test('PATCH condition round-trips and GET exposes it', async () => {
   try {
   const set = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Damaged' }) });
   assert.strictEqual(set.status, 200);
-  assert.deepStrictEqual(await set.json(), { copyCode: code, condition: 'Damaged' });
+  assert.deepStrictEqual(await set.json(), { copyCode: code, condition: 'Damaged', note: null });
   const cat = await (await fetch(BASE + '/api/catalog', { headers: { Authorization: 'Bearer ' + await login() } })).json();
   assert.strictEqual(cat.find((r) => r.copyCode === code).condition, 'Damaged');
   const bad = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Broken' }) });
   assert.strictEqual(bad.status, 400);
   const missing = await fetch(BASE + '/api/copies/NOPE-000/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Good' }) });
   assert.strictEqual(missing.status, 404);
+  } finally {
+    try { await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Good' }) }); } catch {}
+  }
+});
+test('PATCH condition note round-trips, trims, and rejects overlong', async () => {
+  const H = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await login() };
+  const created = await (await fetch(BASE + '/api/catalog', { method: 'POST', headers: H, body: JSON.stringify({ title: 'Note Book ' + Date.now(), author: 'QA', genre: 'Test', copies: 1 }) })).json();
+  const code = created.copies[0].copyCode;
+  try {
+    const set = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Worn', note: '  torn page 42  ' }) });
+    assert.strictEqual(set.status, 200);
+    assert.deepStrictEqual(await set.json(), { copyCode: code, condition: 'Worn', note: 'torn page 42' });
+    const cat = await (await fetch(BASE + '/api/catalog', { headers: { Authorization: 'Bearer ' + await login() } })).json();
+    assert.strictEqual(cat.find((r) => r.copyCode === code).conditionNote, 'torn page 42');
+    const long = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Worn', note: 'x'.repeat(501) }) });
+    assert.strictEqual(long.status, 400);
+    const clear = await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Good', note: '   ' }) });
+    assert.deepStrictEqual(await clear.json(), { copyCode: code, condition: 'Good', note: null });
   } finally {
     try { await fetch(BASE + '/api/copies/' + code + '/condition', { method: 'PATCH', headers: H, body: JSON.stringify({ condition: 'Good' }) }); } catch {}
   }
