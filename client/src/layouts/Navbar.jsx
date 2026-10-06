@@ -15,11 +15,13 @@ import {
 } from 'lucide-react';
 import { NAV } from "./Sidebar.jsx";
 import { Dialog } from "../components/ui/dialog.jsx";
+import { Button } from "../components/ui/button.jsx";
 
 export function Navbar({ sidebarOpen, setSidebarOpen, theme, setTheme, onLogout }) {
   const [q, setQ] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
   const profileRef = useRef(null);
   const nav = useNavigate();
 
@@ -176,7 +178,7 @@ export function Navbar({ sidebarOpen, setSidebarOpen, theme, setTheme, onLogout 
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:bg-rose-50 dark:hover:bg-rose-950/40"
                     onClick={() => {
                       setProfileOpen(false);
-                      onLogout();
+                      setLogoutConfirm(true);
                     }}
                   >
                     <LogOut className="h-4 w-4" />
@@ -231,6 +233,27 @@ export function Navbar({ sidebarOpen, setSidebarOpen, theme, setTheme, onLogout 
               No matching pages found.
             </p>
           )}
+        </div>
+      </Dialog>
+
+      <Dialog open={logoutConfirm} onClose={() => setLogoutConfirm(false)}>
+        <div className="space-y-4">
+          <div className="border-b border-border/70 pb-3">
+            <h3 className="text-base font-bold text-foreground">Sign out?</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">You will need to sign in again to use the circulation desk.</p>
+          </div>
+          <div className="flex items-center justify-end gap-2.5 pt-1">
+            <Button type="button" variant="outline" onClick={() => setLogoutConfirm(false)} className="rounded-xl">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => { setLogoutConfirm(false); onLogout(); }}
+              className="rounded-xl bg-destructive text-white shadow-xs hover:bg-destructive/90"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </Dialog>
     </nav>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -6,7 +7,6 @@ import {
   ArrowRight,
   BookOpen,
   Bookmark,
-  Calendar,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
@@ -144,6 +144,9 @@ function DeskSkeleton() {
 export default function Desk() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null); // ponytail: card key open in side drawer
+  const [closing, setClosing] = useState(false);
+  const [entered, setEntered] = useState(false);
   const [stats, setStats] = useState({ books: '—', active: '—', overdue: '—', copies: 0, avail: 0, odPatrons: 0 });
   const [recent, setRecent] = useState([]);
   const [trend, setTrend] = useState([]);
@@ -216,6 +219,25 @@ export default function Desk() {
     fetchDashboardData();
   }, []);
 
+  const closeDrawer = () => {
+    if (closing) return;
+    setClosing(true);
+    setEntered(false);
+    setTimeout(() => { setSelected(null); setClosing(false); }, 280); // ponytail: match transition duration
+  };
+
+  useEffect(() => {
+    if (!selected) return;
+    setClosing(false);
+    setEntered(false);
+    const raf = requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+    const onKey = (e) => { if (e.key === 'Escape') closeDrawer(); };
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [selected]);
+
   const handleQuickReturn = async (l) => {
     if (!l.patronCode || !l.copyCode) return;
     setQuickReturnBusy(l.id);
@@ -245,24 +267,11 @@ export default function Desk() {
       {/* Executive Command Header */}
       <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/70 bg-gradient-to-r from-card via-card to-primary/5 p-6 shadow-card sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Terminal 01 · Online & Operational
-            </span>
-          </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Circulation Command Center
           </h1>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5 pt-0.5">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-            {new Date().toLocaleDateString(undefined, {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })}{' '}
-            · Sto. Tomas Municipal Library
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Live overview of catalog, loans, overdue items, and circulation trends
           </p>
         </div>
 
@@ -304,7 +313,7 @@ export default function Desk() {
             label: 'On-Shelf Ratio',
             colorClass: 'bg-blue-600',
           }}
-          onClick={() => nav('/catalog')}
+          onClick={() => setSelected('catalog')}
         />
         <MetricCard
           title="Active Borrowings"
@@ -320,7 +329,7 @@ export default function Desk() {
             positive: true,
             text: 'Live Circulation',
           }}
-          onClick={() => nav('/loans')}
+          onClick={() => setSelected('active')}
         />
         <MetricCard
           title="Overdue Attention"
@@ -332,7 +341,7 @@ export default function Desk() {
             positive: stats.overdue === 0,
             text: stats.overdue > 0 ? 'Requires Action' : 'All Clear',
           }}
-          onClick={() => nav('/loans')}
+          onClick={() => setSelected('overdue')}
         />
         <MetricCard
           title="Circulation Volume"
@@ -344,7 +353,7 @@ export default function Desk() {
             positive: true,
             text: '8-Month Velocity',
           }}
-          onClick={() => nav('/loans')}
+          onClick={() => setSelected('volume')}
         />
       </div>
 
@@ -371,18 +380,16 @@ export default function Desk() {
         <div className="mt-8 flex items-end gap-3 sm:gap-5 pt-4 border-t border-border/40 min-h-[170px]">
           {trend.map((t) => {
             const isPeak = t.n === max && max > 0;
-            const barHeight = Math.max(14, Math.round((t.n / max) * 130));
+            const barHeight = t.n === 0 ? 3 : Math.max(14, Math.round((t.n / max) * 130));
             return (
               <div
                 key={t.key}
                 className="group relative flex flex-1 flex-col items-center gap-2"
               >
-                {/* Hover count tooltip */}
-                <div className="absolute -top-7 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pointer-events-none z-10">
-                  <span className="rounded-md bg-foreground px-1.5 py-0.5 text-[10px] font-bold text-background shadow-xs whitespace-nowrap">
-                    {t.n} checkout{t.n === 1 ? '' : 's'}
-                  </span>
-                </div>
+                {/* Always-visible count — ponytail: values on the chart beat hover-only tooltips */}
+                <span className="text-[10px] font-bold tabular-nums text-muted-foreground group-hover:text-foreground transition-colors">
+                  {t.n}
+                </span>
 
                 {/* Gradient Bar */}
                 <div className="relative w-full flex items-end justify-center">
@@ -473,11 +480,11 @@ export default function Desk() {
                       </TableCell>
                       <TableCell>
                         {l.returnAt ? (
-                          <Badge variant="success" statusDot={true}>
+<Badge variant="success" >
                             Returned
                           </Badge>
                         ) : (
-                          <Badge variant="default" statusDot={true}>
+                          <Badge variant="default" >
                             On Loan
                           </Badge>
                         )}
@@ -507,7 +514,7 @@ export default function Desk() {
                 <AlertTriangle className="h-4 w-4 text-rose-500" />
                 <h3 className="text-sm font-semibold text-foreground">Overdue Action Queue</h3>
               </div>
-              <Badge variant={overdue.length > 0 ? "destructive" : "success"} statusDot={true}>
+              <Badge variant={overdue.length > 0 ? "destructive" : "success"} >
                 {overdue.length} Attention
               </Badge>
             </div>
@@ -608,6 +615,82 @@ export default function Desk() {
         </div>
       </div>
       </>
+      )}
+      {selected && createPortal(
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+          <div className={`overlay-backdrop absolute inset-0 transition-opacity duration-300 ${entered && !closing ? 'opacity-100' : 'opacity-0'}`} onClick={closeDrawer} />
+          <aside className={`absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-border bg-card p-6 shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${entered && !closing ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold tracking-tight">
+                  {selected === 'catalog' && 'Catalog Details'}
+                  {selected === 'active' && 'Active Borrowings'}
+                  {selected === 'overdue' && 'Overdue Details'}
+                  {selected === 'volume' && 'Circulation Statistics'}
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Click outside or press Esc to close</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={closeDrawer} className="rounded-xl">✕</Button>
+            </div>
+
+            <div className="mt-5 space-y-4 text-sm">
+              {selected === 'catalog' && (
+                <>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{stats.books}</p><p className="text-[11px] text-muted-foreground">Titles</p></div>
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{stats.copies}</p><p className="text-[11px] text-muted-foreground">Copies</p></div>
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{stats.avail}</p><p className="text-[11px] text-muted-foreground">On shelf</p></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Top genre: <span className="font-semibold text-foreground">{insights.genre}</span></p>
+                  <Button size="sm" onClick={() => nav('/catalog')} className="w-full rounded-xl">Open Catalog <ChevronRight className="ml-1 h-4 w-4" /></Button>
+                </>
+              )}
+              {selected === 'active' && (
+                <>
+                  <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{stats.active}</p><p className="text-[11px] text-muted-foreground">Currently on loan</p></div>
+                  <p className="text-xs text-muted-foreground">Most borrowed: <span className="font-semibold text-foreground">{insights.title}</span> · Top reader: <span className="font-semibold text-foreground">{insights.reader}</span></p>
+                  <div className="divide-y divide-border/40 rounded-2xl border border-border/60">
+                    {recent.filter((l) => !l.returnAt).slice(0, 5).map((l) => (
+                      <div key={l.id} className="flex justify-between gap-2 p-2.5 text-xs"><span className="truncate font-medium">{l.title || l.copyCode}</span><span className="font-mono text-muted-foreground shrink-0">{l.patronCode}</span></div>
+                    ))}
+                  </div>
+                  <Button size="sm" onClick={() => nav('/loans')} className="w-full rounded-xl">Open Loans <ChevronRight className="ml-1 h-4 w-4" /></Button>
+                </>
+              )}
+              {selected === 'overdue' && (
+                <>
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{stats.overdue}</p><p className="text-[11px] text-muted-foreground">Overdue copies</p></div>
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{stats.odPatrons}</p><p className="text-[11px] text-muted-foreground">Patrons past due</p></div>
+                  </div>
+                  <div className="space-y-2">
+                    {overdue.map((l) => (
+                      <div key={l.id} className="rounded-2xl border border-border/60 p-2.5 text-xs"><p className="font-semibold truncate">{l.title}</p><p className="font-mono text-muted-foreground">{l.patronCode} · Due {fmt(l.dueAt)}</p></div>
+                    ))}
+                    {overdue.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">All clear — nothing overdue.</p>}
+                  </div>
+                  <Button size="sm" onClick={() => nav('/loans')} className="w-full rounded-xl">Open Loans <ChevronRight className="ml-1 h-4 w-4" /></Button>
+                </>
+              )}
+              {selected === 'volume' && (
+                <>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{totalTrendCheckouts}</p><p className="text-[11px] text-muted-foreground">8-mo total</p></div>
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{max}</p><p className="text-[11px] text-muted-foreground">Peak ({peakMonth})</p></div>
+                    <div className="rounded-2xl bg-muted/40 p-3"><p className="text-xl font-bold">{Math.round(totalTrendCheckouts / 8)}</p><p className="text-[11px] text-muted-foreground">Avg / mo</p></div>
+                  </div>
+                  <div className="space-y-1.5">
+                    {trend.map((t) => (
+                      <div key={t.key} className="flex items-center gap-2 text-xs"><span className="w-8 font-medium">{t.label}</span><div className="h-2 flex-1 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary" style={{ width: `${max ? (t.n / max) * 100 : 0}%` }} /></div><span className="w-6 text-right font-mono">{t.n}</span></div>
+                    ))}
+                  </div>
+                  <Button size="sm" onClick={() => nav('/loans')} className="w-full rounded-xl">Open Loans <ChevronRight className="ml-1 h-4 w-4" /></Button>
+                </>
+              )}
+            </div>
+          </aside>
+        </div>,
+        document.body
       )}
     </div>
   );

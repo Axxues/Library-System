@@ -218,7 +218,7 @@ export default function Settings() {
                 <p className="text-xs text-muted-foreground">Authenticator app verification</p>
               </div>
             </div>
-            <Badge variant={totp.enabled ? "success" : "neutral"} statusDot={true}>
+            <Badge variant={totp.enabled ? "success" : "neutral"} >
               {totp.enabled ? "Active" : "Disabled"}
             </Badge>
           </div>

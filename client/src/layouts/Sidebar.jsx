@@ -40,6 +40,27 @@ export const NAV_SECTIONS = [
 
 export const NAV = NAV_SECTIONS.flatMap((s) => s.items);
 
+function readStaff() {
+  try {
+    return JSON.parse(localStorage.getItem('staff') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function UserAvatar({ size = 'h-9 w-9 text-sm', bare = false }) {
+  const me = readStaff();
+  const label = (me.username || 'S')[0].toUpperCase();
+  if (me.avatar) {
+    return <img src={me.avatar} alt="" className={`${bare ? '' : 'rounded-full '}h-full w-full object-cover`} />;
+  }
+  return (
+    <span className={`${bare ? 'flex h-full w-full items-center justify-center rounded-2xl' : 'flex shrink-0 items-center justify-center rounded-full'} bg-primary font-bold text-primary-foreground ${size}`}>
+      {label}
+    </span>
+  );
+}
+
 export function Sidebar({ open, setOpen, collapsed, onToggle }) {
   const [isDesktop, setIsDesktop] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
@@ -53,6 +74,7 @@ export function Sidebar({ open, setOpen, collapsed, onToggle }) {
   }, []);
 
   const isCollapsed = collapsed && isDesktop;
+  const { username: staffName = 'Staff', role: staffRole = 'staff' } = readStaff();
 
   return (
     <>
@@ -160,37 +182,30 @@ export function Sidebar({ open, setOpen, collapsed, onToggle }) {
           ))}
         </nav>
 
-        {/* Station Status Footer */}
+        {/* User Profile Footer */}
         <div className="border-t border-border/60 bg-muted/15 p-2">
           {!isCollapsed ? (
-            <div className="m-2 rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-primary/5 p-3.5 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  </span>
-                  <span className="text-xs font-bold text-foreground">Circulation Desk</span>
-                </div>
-                <span className="rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                  ONLINE
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] text-muted-foreground font-mono">
-                Sto. Tomas · Node 01
-              </p>
-            </div>
+            <NavLink
+              to="/profile"
+              className="m-2 flex items-center gap-2.5 rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-primary/5 p-3 shadow-xs transition-colors hover:border-primary/40"
+            >
+              <UserAvatar size="h-9 w-9 text-sm" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-bold text-foreground">{staffName}</span>
+                <span className="block truncate text-[11px] capitalize text-muted-foreground">{staffRole}</span>
+              </span>
+            </NavLink>
           ) : (
             <div className="group relative my-2 flex justify-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-card/60 transition-colors group-hover:border-emerald-500/50 shadow-xs">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                </span>
-              </div>
+              <NavLink
+                to="/profile"
+                aria-label="Open profile"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-card/60 shadow-xs transition-colors hover:border-primary/40"
+              >
+                <UserAvatar size="h-10 w-10 text-sm" bare={true} />
+              </NavLink>
               <div className="pointer-events-none absolute left-full ml-3.5 hidden rounded-xl border border-border/80 bg-popover px-3 py-1.5 text-xs font-semibold text-popover-foreground shadow-float opacity-0 -translate-x-2 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0 group-hover:flex items-center gap-2 z-50 whitespace-nowrap">
-                <span>Sto. Tomas Desk · Online</span>
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span>{staffName}</span>
               </div>
             </div>
           )}

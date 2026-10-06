@@ -1,0 +1,230 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1220" viewBox="0 0 1280 1220" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif">
+  <defs>
+    <!-- Crisp, perfectly proportioned arrowhead -->
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f172a"/>
+    </marker>
+    <!-- Subtle drop shadows for nodes -->
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Clean canvas background -->
+  <rect x="0" y="0" width="1280" height="1220" fill="#ffffff"/>
+
+  <!-- Diagram Header -->
+  <text x="640" y="44" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a" letter-spacing="0.5">Library System - DFD Level 1</text>
+  <text x="640" y="68" text-anchor="middle" font-size="12" font-weight="500" fill="#64748b">Gane-Sarson Notation &#8226; Subsystems &amp; Core Data Flows</text>
+
+  <!-- ========================================== -->
+  <!-- DATA FLOW ARROWS (Orthogonal Routing)     -->
+  <!-- ========================================== -->
+  <g stroke="#0f172a" stroke-width="1.6" fill="none" marker-end="url(#arr)" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Flow 1 & 2: Admin <-> P1 (Manage Accounts and Auth) -->
+    <path d="M 200,140 H 560"/>
+    <path d="M 560,170 H 200"/>
+
+    <!-- Flow 3 & 4: P1 <-> D1 (Users) -->
+    <path d="M 760,140 H 1010"/>
+    <path d="M 1010,170 H 760" stroke-dasharray="6,4"/>
+
+    <!-- Flow 5 & 6: Staff <-> P2 (Manage Catalog and Copies) -->
+    <path d="M 200,520 H 310 V 395 H 560"/>
+    <path d="M 560,420 H 345 V 540 H 200"/>
+
+    <!-- Flow 7: P2 -> D2 (Books and Copies) -->
+    <path d="M 760,425 H 1010"/>
+
+    <!-- Flow 8 & 9: Patron <-> P2 (Manage Catalog and Copies) -->
+    <path d="M 200,885 H 240 V 445 H 560"/>
+    <path d="M 560,470 H 275 V 910 H 200"/>
+
+    <!-- Flow 10 & 11: Staff <-> P3 (Manage Patrons) -->
+    <path d="M 200,560 H 450 V 690 H 560"/>
+    <path d="M 560,720 H 475 V 580 H 200"/>
+
+    <!-- Flow 12: P3 -> D3 (Patrons) -->
+    <path d="M 760,715 H 1010"/>
+
+    <!-- Flow 13 & 14: Staff <-> P4 (Circulate and Recommend) -->
+    <path d="M 200,600 H 505 V 985 H 560"/>
+    <path d="M 560,1010 H 530 V 615 H 200"/>
+
+    <!-- Flow 15 & 16: Patron <-> P4 (Circulate and Recommend) -->
+    <path d="M 200,930 H 380 V 1035 H 560"/>
+    <path d="M 560,1055 H 415 V 950 H 200"/>
+
+    <!-- Flow 17 & 18: D2 <-> P4 (Copy status & update) -->
+    <path d="M 1010,455 H 890 V 1000 H 760"/>
+    <path d="M 760,975 H 850 V 440 H 1010"/>
+
+    <!-- Flow 19: D3 -> P4 (Patron record) -->
+    <path d="M 1010,735 H 930 V 1025 H 760"/>
+
+    <!-- Flow 20 & 21: P4 <-> D4 (Loans) -->
+    <path d="M 760,1045 H 1010"/>
+    <path d="M 1010,1065 H 760" stroke-dasharray="6,4"/>
+
+    <!-- Flow 22: P4 -> D5 (Logs) -->
+    <path d="M 760,1068 H 970 V 1150 H 1010"/>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- EXTERNAL ENTITIES (Left Column)           -->
+  <!-- ========================================== -->
+  <g font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle" filter="url(#shadow)">
+    <!-- Admin -->
+    <rect x="50" y="125" width="150" height="60" rx="4" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+    <text x="125" y="160">Admin</text>
+
+    <!-- Staff -->
+    <rect x="50" y="505" width="150" height="118" rx="4" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+    <text x="125" y="569">Staff</text>
+
+    <!-- Patron -->
+    <rect x="50" y="865" width="150" height="100" rx="4" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+    <text x="125" y="920">Patron</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- PROCESSES (Middle Column, Gane-Sarson)    -->
+  <!-- ========================================== -->
+  <g font-size="14" filter="url(#shadow)">
+    <!-- Process 1: Manage Accounts and Auth -->
+    <g transform="translate(560, 100)">
+      <rect x="0" y="0" width="200" height="110" rx="16" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0.8" y="28" width="198.4" height="54" fill="#ffffff" stroke="none"/>
+      <line x1="0" y1="28" x2="200" y2="28" stroke="#0f172a" stroke-width="1.4"/>
+      <line x1="0" y1="82" x2="200" y2="82" stroke="#0f172a" stroke-width="1.4"/>
+      <text x="16" y="20" font-size="12" font-weight="700" fill="#0f172a">1</text>
+      <text x="100" y="51" text-anchor="middle" font-weight="600" fill="#0f172a">Manage Accounts</text>
+      <text x="100" y="69" text-anchor="middle" font-weight="600" fill="#0f172a">and Auth</text>
+    </g>
+
+    <!-- Process 2: Manage Catalog and Copies -->
+    <g transform="translate(560, 380)">
+      <rect x="0" y="0" width="200" height="110" rx="16" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0.8" y="28" width="198.4" height="54" fill="#ffffff" stroke="none"/>
+      <line x1="0" y1="28" x2="200" y2="28" stroke="#0f172a" stroke-width="1.4"/>
+      <line x1="0" y1="82" x2="200" y2="82" stroke="#0f172a" stroke-width="1.4"/>
+      <text x="16" y="20" font-size="12" font-weight="700" fill="#0f172a">2</text>
+      <text x="100" y="51" text-anchor="middle" font-weight="600" fill="#0f172a">Manage Catalog</text>
+      <text x="100" y="69" text-anchor="middle" font-weight="600" fill="#0f172a">and Copies</text>
+    </g>
+
+    <!-- Process 3: Manage Patrons -->
+    <g transform="translate(560, 660)">
+      <rect x="0" y="0" width="200" height="110" rx="16" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0.8" y="28" width="198.4" height="54" fill="#ffffff" stroke="none"/>
+      <line x1="0" y1="28" x2="200" y2="28" stroke="#0f172a" stroke-width="1.4"/>
+      <line x1="0" y1="82" x2="200" y2="82" stroke="#0f172a" stroke-width="1.4"/>
+      <text x="16" y="20" font-size="12" font-weight="700" fill="#0f172a">3</text>
+      <text x="100" y="60" text-anchor="middle" font-weight="600" fill="#0f172a">Manage Patrons</text>
+    </g>
+
+    <!-- Process 4: Circulate and Recommend -->
+    <g transform="translate(560, 960)">
+      <rect x="0" y="0" width="200" height="110" rx="16" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0.8" y="28" width="198.4" height="54" fill="#ffffff" stroke="none"/>
+      <line x1="0" y1="28" x2="200" y2="28" stroke="#0f172a" stroke-width="1.4"/>
+      <line x1="0" y1="82" x2="200" y2="82" stroke="#0f172a" stroke-width="1.4"/>
+      <text x="16" y="20" font-size="12" font-weight="700" fill="#0f172a">4</text>
+      <text x="100" y="51" text-anchor="middle" font-weight="600" fill="#0f172a">Circulate and</text>
+      <text x="100" y="69" text-anchor="middle" font-weight="600" fill="#0f172a">Recommend</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- DATA STORES (Right Column, Gane-Sarson)   -->
+  <!-- ========================================== -->
+  <g font-size="14" filter="url(#shadow)">
+    <!-- D1: Users -->
+    <g transform="translate(1010, 125)">
+      <rect x="0" y="0" width="220" height="60" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0" y="0" width="52" height="60" fill="#E2E8F0" stroke="#0f172a" stroke-width="1.6"/>
+      <text x="26" y="35" text-anchor="middle" font-weight="700" fill="#0f172a">D1</text>
+      <text x="136" y="35" text-anchor="middle" font-weight="600" fill="#0f172a">Users</text>
+    </g>
+
+    <!-- D2: Books and Copies -->
+    <g transform="translate(1010, 405)">
+      <rect x="0" y="0" width="220" height="60" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0" y="0" width="52" height="60" fill="#E2E8F0" stroke="#0f172a" stroke-width="1.6"/>
+      <text x="26" y="35" text-anchor="middle" font-weight="700" fill="#0f172a">D2</text>
+      <text x="136" y="28" text-anchor="middle" font-weight="600" fill="#0f172a">Books and</text>
+      <text x="136" y="46" text-anchor="middle" font-weight="600" fill="#0f172a">Copies</text>
+    </g>
+
+    <!-- D3: Patrons -->
+    <g transform="translate(1010, 685)">
+      <rect x="0" y="0" width="220" height="60" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0" y="0" width="52" height="60" fill="#E2E8F0" stroke="#0f172a" stroke-width="1.6"/>
+      <text x="26" y="35" text-anchor="middle" font-weight="700" fill="#0f172a">D3</text>
+      <text x="136" y="35" text-anchor="middle" font-weight="600" fill="#0f172a">Patrons</text>
+    </g>
+
+    <!-- D4: Loans -->
+    <g transform="translate(1010, 1025)">
+      <rect x="0" y="0" width="220" height="60" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0" y="0" width="52" height="60" fill="#E2E8F0" stroke="#0f172a" stroke-width="1.6"/>
+      <text x="26" y="35" text-anchor="middle" font-weight="700" fill="#0f172a">D4</text>
+      <text x="136" y="35" text-anchor="middle" font-weight="600" fill="#0f172a">Loans</text>
+    </g>
+
+    <!-- D5: Logs -->
+    <g transform="translate(1010, 1120)">
+      <rect x="0" y="0" width="220" height="60" fill="#FEF08A" stroke="#0f172a" stroke-width="1.6"/>
+      <rect x="0" y="0" width="52" height="60" fill="#E2E8F0" stroke="#0f172a" stroke-width="1.6"/>
+      <text x="26" y="35" text-anchor="middle" font-weight="700" fill="#0f172a">D5</text>
+      <text x="136" y="35" text-anchor="middle" font-weight="600" fill="#0f172a">Logs</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- FLOW LABELS (With protective halos)        -->
+  <!-- ========================================== -->
+  <g font-size="11.5" font-weight="500" fill="#1e293b" paint-order="stroke fill" stroke="#ffffff" stroke-width="5" stroke-linejoin="round">
+    <!-- Admin <-> P1 -->
+    <text x="380" y="132" text-anchor="middle">credentials, account data</text>
+    <text x="380" y="188" text-anchor="middle">token / confirmation</text>
+
+    <!-- P1 <-> D1 -->
+    <text x="885" y="132" text-anchor="middle">store accounts</text>
+    <text x="885" y="188" text-anchor="middle">account records</text>
+
+    <!-- Staff <-> P2 & Patron <-> P2 (Upper Corridor, Staggered) -->
+    <text x="430" y="387" text-anchor="middle">title, author, genre, copies</text>
+    <text x="480" y="413" text-anchor="middle">book + copy codes, QR</text>
+    <text x="360" y="438" text-anchor="middle">search query</text>
+    <text x="450" y="463" text-anchor="middle">catalog results</text>
+
+    <!-- P2 -> D2 -->
+    <text x="885" y="417" text-anchor="middle">store books/copies</text>
+
+    <!-- Long-haul flows between D2 and P4 -->
+    <text x="836" y="680" text-anchor="end">status update</text>
+    <text x="904" y="580" text-anchor="start">copy status</text>
+
+    <!-- Staff <-> P3 (Middle Corridor, Staggered) -->
+    <text x="330" y="552" text-anchor="middle">patron details</text>
+    <text x="400" y="573" text-anchor="middle">patron code</text>
+
+    <!-- P3 -> D3 -->
+    <text x="885" y="707" text-anchor="middle">register / update</text>
+
+    <!-- Long-haul D3 -> P4 -->
+    <text x="944" y="860" text-anchor="start">patron record</text>
+
+    <!-- Staff <-> P4 & Patron <-> P4 (Lower Corridor, Staggered) -->
+    <text x="340" y="593" text-anchor="middle">checkout / return scan</text>
+    <text x="420" y="628" text-anchor="middle">receipt, condition flag</text>
+    <text x="300" y="922" text-anchor="middle">patron + copy codes</text>
+    <text x="410" y="965" text-anchor="middle">receipt, due date</text>
+
+    <!-- P4 <-> D4 & P4 -> D5 -->
+    <text x="885" y="1037" text-anchor="middle">loan / return</text>
+    <text x="885" y="1083" text-anchor="middle">loan history</text>
+    <text x="885" y="1142" text-anchor="middle">action, ms</text>
+  </g>
+</svg>

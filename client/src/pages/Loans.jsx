@@ -6,6 +6,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Eye,
   Filter,
   History,
   RotateCcw,
@@ -18,6 +19,7 @@ import { api } from '../api.js';
 import { Cover } from '../cover.jsx';
 import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
+import { Dialog } from '../components/ui/dialog.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { EmptyState } from '../components/ui/empty-state.jsx';
 import { Skeleton, SkeletonCover } from '../components/ui/skeleton.jsx';
@@ -116,6 +118,10 @@ export default function Loans() {
   const [q, setQ] = useState('');
   const [counts, setCounts] = useState({ all: 0, active: 0, overdue: 0, returned: 0 });
   const [actionBusy, setActionBusy] = useState(null);
+  const [confirmLoan, setConfirmLoan] = useState(null);
+  const [detailLoan, setDetailLoan] = useState(null); // ponytail: selected loan for details dialog
+  const [patronMap, setPatronMap] = useState({}); // ponytail: code->name fallback if loans payload lacks patronName
+  const nameFor = (l) => l?.patronName || patronMap[l?.patronCode] || l?.patronCode;
 
   const load = (status) => {
     setLoading(true);
@@ -163,6 +169,9 @@ export default function Loans() {
   useEffect(() => {
     load('');
     refreshCounts();
+    api('/api/patrons').then((d) => {
+      if (Array.isArray(d)) setPatronMap(Object.fromEntries(d.map((p) => [p.code, p.name])));
+    }).catch(() => {});
   }, []);
 
   const handleReturn = async (loan) => {
@@ -179,6 +188,7 @@ export default function Loans() {
         }),
       });
       setActionBusy(null);
+      setConfirmLoan(null);
       load(f);
       refreshCounts();
     } catch {
@@ -187,7 +197,7 @@ export default function Loans() {
   };
 
   const list = rows.filter((l) => {
-    const searchString = `${l.patronCode || ''} ${l.title || ''} ${l.copyCode || ''}`.toLowerCase();
+    const searchString = `${l.patronCode || ''} ${l.patronName || ''} ${l.title || ''} ${l.copyCode || ''}`.toLowerCase();
     return searchString.includes(q.toLowerCase());
   });
 
@@ -208,15 +218,6 @@ export default function Loans() {
           <p className="text-xs text-muted-foreground mt-0.5">
             Monitor circulation records, track upcoming due dates, and process fast check-ins
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge
-            variant={counts.overdue > 0 ? "destructive" : "success"}
-            statusDot={true}
-          >
-            {counts.overdue > 0 ? `${counts.overdue} Overdue Attention Required` : 'Shelves in Good Standing'}
-          </Badge>
         </div>
       </div>
 
@@ -306,10 +307,10 @@ export default function Loans() {
                           {(l.patronCode || 'P').slice(-2)}
                         </span>
                         <div>
-                          <p className="font-mono text-xs font-bold text-foreground">
-                            {l.patronCode}
+                          <p className="text-xs font-bold text-foreground">
+                            {nameFor(l)}
                           </p>
-                          <p className="text-[11px] text-muted-foreground">Borrower</p>
+                          <p className="font-mono text-[11px] text-muted-foreground">{l.patronCode}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -358,24 +359,35 @@ export default function Loans() {
                             ? 'destructive'
                             : 'default'
                         }
-                        statusDot={true}
+                        
                       >
                         {l.returnAt ? 'Returned' : isOverdue ? 'Overdue' : 'On Loan'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {!l.returnAt && (
+                      <div className="flex items-center justify-end gap-1.5">
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={actionBusy === l.id}
-                          onClick={() => handleReturn(l)}
-                          className="h-8 rounded-lg px-2.5 text-xs shadow-xs hover:border-emerald-500 hover:text-emerald-600"
+                          onClick={() => setDetailLoan(l)}
+                          className="h-8 rounded-lg px-2.5 text-xs shadow-xs"
                         >
-                          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-                          {actionBusy === l.id ? 'Returning…' : 'Check In'}
+                          <Eye className="mr-1.5 h-3.5 w-3.5" />
+                          Details
                         </Button>
-                      )}
+                        {!l.returnAt && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={actionBusy === l.id}
+                            onClick={() => setConfirmLoan(l)}
+                            className="h-8 rounded-lg px-2.5 text-xs shadow-xs hover:border-emerald-500 hover:text-emerald-600"
+                          >
+                            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                            {actionBusy === l.id ? 'Returning…' : 'Check In'}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -397,6 +409,64 @@ export default function Loans() {
           </div>
         )}
       </div>
+
+      <Dialog open={!!confirmLoan} onClose={() => setConfirmLoan(null)}>
+        {confirmLoan && (
+          <div className="space-y-4">
+            <div className="border-b border-border/70 pb-3">
+              <h3 className="text-base font-bold text-foreground">Check in this book?</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">The loan closes now and the copy returns to Available.</p>
+            </div>
+            <dl className="grid grid-cols-[130px_1fr] gap-x-3 gap-y-1.5 text-sm">
+              <dt className="text-muted-foreground">Book</dt><dd className="font-semibold">{confirmLoan.title || confirmLoan.copyCode}</dd>
+              <dt className="text-muted-foreground">Copy</dt><dd className="font-mono text-xs">{confirmLoan.copyCode}</dd>
+              <dt className="text-muted-foreground">Patron</dt><dd className="font-mono text-xs">{confirmLoan.patronCode}</dd>
+            </dl>
+            <div className="flex items-center justify-end gap-2.5 border-t border-border/50 pt-3">
+              <Button type="button" variant="outline" onClick={() => setConfirmLoan(null)} className="rounded-xl">
+                Cancel
+              </Button>
+              <Button onClick={() => handleReturn(confirmLoan)} disabled={actionBusy === confirmLoan.id} className="rounded-xl shadow-primary-sm">
+                {actionBusy === confirmLoan.id ? 'Returning…' : 'Confirm Check In'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      <Dialog open={!!detailLoan} onClose={() => setDetailLoan(null)}>
+        {detailLoan && (
+          <div className="space-y-4">
+            <div className="border-b border-border/70 pb-3">
+              <h3 className="text-base font-bold text-foreground">Circulation Details</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">Borrowed book, borrower, and loan dates.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Cover title={detailLoan.title} size="md" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-foreground">{detailLoan.title || detailLoan.copyCode}</p>
+                <p className="font-mono text-xs text-muted-foreground">{detailLoan.copyCode}</p>
+              </div>
+              <span className="ml-auto">
+                <Badge variant={detailLoan.returnAt ? 'success' : 'default'}>
+                  {detailLoan.returnAt ? 'Returned' : 'On Loan'}
+                </Badge>
+              </span>
+            </div>
+            <dl className="grid grid-cols-[130px_1fr] gap-x-3 gap-y-1.5 text-sm">
+              <dt className="text-muted-foreground">Borrower</dt><dd className="font-semibold">{nameFor(detailLoan)}</dd>
+              <dt className="text-muted-foreground">Borrowed</dt><dd>{fmt(detailLoan.checkoutAt)}</dd>
+              <dt className="text-muted-foreground">Due</dt><dd>{fmt(detailLoan.dueAt)}</dd>
+              <dt className="text-muted-foreground">Returned</dt><dd>{detailLoan.returnAt ? fmt(detailLoan.returnAt) : 'Not yet returned'}</dd>
+            </dl>
+            <div className="flex items-center justify-end border-t border-border/50 pt-3">
+              <Button type="button" variant="outline" onClick={() => setDetailLoan(null)} className="rounded-xl">
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 }

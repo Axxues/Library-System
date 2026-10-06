@@ -88,10 +88,10 @@ const STEPS = [
 
 export default function Scan() {
   const [step, setStep] = useState(0);
-  const [patronCode, setP] = useState('P-0001');
-  const [copyCode, setC] = useState('B-COPY-001');
+  const [patronCode, setP] = useState('');
+  const [copyCode, setC] = useState('');
+  const [queue, setQueue] = useState([]);
   const [out, setOut] = useState(null);
-  const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [dir, setDir] = useState({ patrons: [], catalog: [], recent: [] });
   const cam = useCamera();
@@ -115,55 +115,68 @@ export default function Scan() {
   const patron = dir.patrons.find((x) => x.code === patronCode.trim()) || null;
   const book = dir.catalog.find((x) => x.copyCode === copyCode.trim()) || null;
 
+  const bookFor = (code) => dir.catalog.find((x) => x.copyCode === code) || null;
+
+  const addBook = () => {
+    const code = copyCode.trim();
+    if (!code || !book || queue.includes(code)) return;
+    setQueue((q) => [...q, code]);
+    setC('');
+  };
+  const removeBook = (code) => setQueue((q) => q.filter((c) => c !== code));
+
   const act = async (action) => {
     setBusy(true);
-    setErr('');
-    let r;
-    try {
-      r = await api('/api/circulation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patronCode, copyCode, action }),
-      });
-    } catch (e) {
-      setErr(e.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : e.message);
-      setBusy(false);
-      return;
+    const items = [];
+    for (const code of queue) {
+      let r;
+      try {
+        r = await api('/api/circulation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ patronCode, copyCode: code, action }),
+        });
+      } catch (e) {
+        items.push({ copyCode: code, ok: false, error: e.message === 'unreachable' ? 'Cannot reach the server at localhost:4000.' : e.message });
+        break;
+      }
+      if (r.error) items.push({ copyCode: code, ok: false, error: r.error });
+      else items.push({ copyCode: code, ok: true, loan: r.loan, ms: r.ms, recs: r.recommendations });
     }
     setBusy(false);
-    if (r.error) {
-      setErr(r.error);
-    } else {
-      setOut({ ...r, action });
-      api('/api/loans').then((loans) => {
-        if (Array.isArray(loans)) setDir((d) => ({ ...d, recent: loans.slice(0, 5) }));
-      }).catch(() => {});
-    }
+    setOut({ action, items });
+    api('/api/loans').then((loans) => {
+      if (Array.isArray(loans)) setDir((d) => ({ ...d, recent: loans.slice(0, 5) }));
+    }).catch(() => {});
   };
 
   const next = () => {
     cam.stop();
     setOut(null);
-    setErr('');
     setStep((s) => Math.min(2, s + 1));
   };
 
   const back = () => {
     cam.stop();
-    setErr('');
     setStep((s) => Math.max(0, s - 1));
   };
 
   const restart = () => {
     cam.stop();
     setOut(null);
-    setErr('');
     setC('');
+    setQueue([]);
     setStep(1);
   };
 
-  const due = out?.loan?.dueAt
-    ? new Date(out.loan.dueAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  const okItems = out ? out.items.filter((i) => i.ok) : [];
+  const firstRecs = out ? (out.items.find((i) => i.ok && Array.isArray(i.recs))?.recs || []) : [];
+
+  // ponytail: mirrors the server 7-day loan term; fetch terms if lending rules ever vary
+  const policyDue = new Date(Date.now() + 7 * 864e5).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const fmtDue = (loan) => loan?.dueAt
+    ? new Date(loan.dueAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
     : '—';
 
   return (
@@ -171,24 +184,12 @@ export default function Scan() {
       {/* Station Command Banner */}
       <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/70 bg-gradient-to-r from-card via-card to-primary/5 p-6 shadow-card sm:flex-row sm:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Dual-QR Station · Console 01
-            </span>
-          </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Circulation Scanner Terminal
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Automated Dual-QR optical scan station for borrower cards and book barcodes
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant={cam.active ? "success" : "neutral"} statusDot={true}>
-            {cam.active ? "Optical Sensor Active" : "Scanner Ready"}
-          </Badge>
         </div>
       </div>
 
@@ -270,7 +271,6 @@ export default function Scan() {
                     <div>
                       <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
                         <span>Patron Membership Code</span>
-                        <span className="text-[11px] font-mono text-muted-foreground">Default: P-0001</span>
                       </label>
                       <div className="relative">
                         <Input
@@ -298,7 +298,7 @@ export default function Scan() {
                               <p className="text-xs font-mono text-muted-foreground">{patron.code} · {patron.role || 'Active Member'}</p>
                             </div>
                           </div>
-                          <Badge variant="success" statusDot={true}>Verified</Badge>
+                          <Badge variant="success" >Verified</Badge>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-50/60 p-3 text-xs text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">
@@ -329,7 +329,6 @@ export default function Scan() {
                     <div>
                       <label className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
                         <span>Book Accession / Barcode</span>
-                        <span className="text-[11px] font-mono text-muted-foreground">Default: B-COPY-001</span>
                       </label>
                       <div className="relative">
                         <Input
@@ -338,7 +337,7 @@ export default function Scan() {
                           onChange={(e) => setC(e.target.value)}
                           placeholder="Type or scan book copy barcode…"
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && copyCode.trim()) next();
+                            if (e.key === 'Enter' && copyCode.trim()) addBook();
                           }}
                         />
                         <BookOpen className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -356,7 +355,7 @@ export default function Scan() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Badge variant={book.status === 'Available' ? 'success' : 'default'} statusDot={true}>
+                            <Badge variant={book.status === 'Available' ? 'success' : 'default'} >
                               {book.status}
                             </Badge>
                           </div>
@@ -367,6 +366,38 @@ export default function Scan() {
                           <span>Unknown copy barcode. Verify spine label in catalog.</span>
                         </div>
                       )
+                    )}
+
+                    {copyCode.trim() && book && !queue.includes(copyCode.trim()) && (
+                      <Button onClick={addBook} size="sm" className="w-full rounded-xl shadow-primary-sm">
+                        Add book to checkout list
+                      </Button>
+                    )}
+                    {copyCode.trim() && queue.includes(copyCode.trim()) && (
+                      <p className="text-xs text-muted-foreground">Already in the checkout list.</p>
+                    )}
+
+                    {queue.length > 0 && (
+                      <div className="rounded-2xl border border-border/70 bg-card p-3 space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Checkout list ({queue.length})
+                        </p>
+                        {queue.map((code) => {
+                          const b = bookFor(code);
+                          return (
+                            <div key={code} className="flex items-center gap-2.5">
+                              <Cover title={b?.title} size="sm" />
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-semibold text-foreground">{b?.title || code}</span>
+                                <span className="block font-mono text-[11px] text-muted-foreground">{code}</span>
+                              </span>
+                              <button type="button" onClick={() => removeBook(code)} className="text-xs text-primary underline hover:text-primary-hover">
+                                Remove
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
                 )}
@@ -450,45 +481,43 @@ export default function Scan() {
                     <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
                       <div className="flex items-center justify-between pb-2 border-b border-border/50">
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Book Copy Barcode
+                          Book Copies ({queue.length})
                         </span>
-                        <Badge variant={book?.status === 'Available' ? 'success' : 'default'} statusDot={true}>
-                          {book?.status || 'Unknown'}
-                        </Badge>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Cover title={book?.title} size="md" />
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-foreground truncate">{book?.title || '—'}</p>
-                          <p className="text-xs text-muted-foreground">{book?.author} · {copyCode}</p>
-                        </div>
-                      </div>
+                      {queue.map((code) => {
+                        const b = bookFor(code);
+                        return (
+                          <div key={code} className="flex items-center gap-3">
+                            <Cover title={b?.title} size="md" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold text-foreground truncate">{b?.title || '—'}</p>
+                              <p className="text-xs text-muted-foreground">{b?.author || ''} · <span className="font-mono">{code}</span></p>
+                            </div>
+                            <Badge variant={b?.status === 'Available' ? 'success' : 'default'} >
+                              {b?.status || 'Unknown'}
+                            </Badge>
+                          </div>
+                        );
+                      })}
                     </div>
-
-                    {err && (
-                      <div className="flex items-center gap-2.5 rounded-2xl border border-rose-500/40 bg-rose-50 p-3.5 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-                        <AlertCircle className="h-4 w-4 shrink-0" />
-                        <span>{err}</span>
-                      </div>
-                    )}
 
                     <div className="flex items-center gap-3 pt-2">
                       <Button
                         variant="secondary"
                         onClick={() => act('return')}
-                        disabled={busy}
+                        disabled={busy || queue.length === 0}
                         className="flex-1 rounded-xl"
                       >
                         <RotateCcw className="mr-2 h-4 w-4" />
-                        Process Return
+                        Process Return{queue.length > 1 ? ` (${queue.length})` : ''}
                       </Button>
                       <Button
                         onClick={() => act('checkout')}
-                        disabled={busy}
+                        disabled={busy || queue.length === 0}
                         className="flex-1 rounded-xl shadow-primary-sm"
                       >
                         <CheckCircle2 className="mr-2 h-4 w-4" />
-                        {busy ? 'Authorizing…' : 'Complete Checkout'}
+                        {busy ? 'Authorizing…' : `Complete Checkout${queue.length > 1 ? ` (${queue.length})` : ''}`}
                       </Button>
                     </div>
                   </div>
@@ -499,7 +528,7 @@ export default function Scan() {
                   <div className="flex justify-end pt-2">
                     <Button
                       onClick={next}
-                      disabled={step === 0 ? !patronCode.trim() : !copyCode.trim()}
+                      disabled={step === 0 ? !patronCode.trim() : queue.length === 0}
                       className="rounded-xl shadow-primary-sm"
                     >
                       Continue
@@ -521,11 +550,11 @@ export default function Scan() {
                         {out.action === 'return' ? 'Book Return Confirmed' : 'Checkout Authorized'}
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Processed at {new Date().toLocaleTimeString()} · Latency {out.ms}ms
+                        {okItems.length} of {out.items.length} succeeded · {new Date().toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
-                  <Badge variant="success" statusDot={true}>Success</Badge>
+                  <Badge variant="success" >Success</Badge>
                 </div>
 
                 <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-2 text-sm">
@@ -533,30 +562,31 @@ export default function Scan() {
                     <span className="text-muted-foreground text-xs">Patron Name</span>
                     <span className="font-semibold text-foreground">{patron?.name || patronCode}</span>
                   </div>
-                  <div className="flex justify-between py-1.5 border-b border-border/40">
-                    <span className="text-muted-foreground text-xs">Book Title</span>
-                    <span className="font-semibold text-foreground">{book?.title || copyCode}</span>
-                  </div>
-                  <div className="flex justify-between py-1.5 border-b border-border/40">
-                    <span className="text-muted-foreground text-xs">Due Date</span>
-                    <span className="font-mono font-bold text-primary">{due}</span>
-                  </div>
-                  {out.condition && (
-                    <div className="flex justify-between py-1.5 border-b border-border/40">
-                      <span className="text-muted-foreground text-xs">Copy Condition</span>
-                      <Badge variant={out.condition === 'Good' ? 'success' : out.condition === 'Worn' ? 'warning' : 'destructive'}>{out.condition}</Badge>
-                    </div>
-                  )}
+                  {out.items.map((it) => {
+                    const b = bookFor(it.copyCode);
+                    return (
+                      <div key={it.copyCode} className="flex items-center justify-between gap-2 py-1.5 border-b border-border/40 last:border-0">
+                        <span className="min-w-0">
+                          <span className="block truncate font-semibold text-foreground">{b?.title || it.copyCode}</span>
+                          <span className="block font-mono text-[11px] text-muted-foreground">{it.copyCode}{it.ok ? ` · due ${fmtDue(it.loan)}` : ''}</span>
+                          {!it.ok && <span className="block text-xs text-destructive">{it.error}</span>}
+                        </span>
+                        {it.ok
+                          ? <Badge variant="success">Done</Badge>
+                          : <Badge variant="destructive">Failed</Badge>}
+                      </div>
+                    );
+                  })}
                 </div>
 
-                {Array.isArray(out?.recommendations) && out.recommendations.length > 0 && (
+                {firstRecs.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                       Recommended for this Patron
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {out.recommendations.map((r) => (
+                      {firstRecs.map((r) => (
                         <span
                           key={r.id}
                           className="flex items-center gap-2 rounded-full border border-border/80 bg-muted/40 py-1 pl-1.5 pr-3 text-xs font-medium text-foreground"
@@ -610,7 +640,7 @@ export default function Scan() {
               >
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold uppercase tracking-wider">Slot 1 · Patron Pass</span>
-                  {patron ? <Badge variant="success" statusDot={true}>Active</Badge> : <Badge variant="neutral">Standby</Badge>}
+                  {patron ? <Badge variant="success" >Active</Badge> : <Badge variant="neutral">Standby</Badge>}
                 </div>
                 {patron ? (
                   <div className="flex items-center gap-3">
@@ -637,7 +667,7 @@ export default function Scan() {
               >
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold uppercase tracking-wider">Slot 2 · Book Copy</span>
-                  {book ? <Badge variant="info" statusDot={true}>Mounted</Badge> : <Badge variant="neutral">Standby</Badge>}
+                  {book ? <Badge variant="info" >Mounted</Badge> : <Badge variant="neutral">Standby</Badge>}
                 </div>
                 {book ? (
                   <div className="flex items-center gap-3">
@@ -652,6 +682,9 @@ export default function Scan() {
                 )}
               </div>
             </div>
+            <p className="border-t border-border/50 pt-3 text-xs text-muted-foreground">
+              Return deadline: <span className="font-mono font-bold text-primary">{policyDue}</span> · 7-day loans
+            </p>
           </div>
 
           {/* Shift Circulation Feed */}
@@ -679,9 +712,9 @@ export default function Scan() {
                       </p>
                     </div>
                     {l.returnAt ? (
-                      <Badge variant="success" className="text-[10px]" statusDot={true}>Returned</Badge>
+                      <Badge variant="success" className="text-[10px]" >Returned</Badge>
                     ) : (
-                      <Badge variant="default" className="text-[10px]" statusDot={true}>Loan</Badge>
+                      <Badge variant="default" className="text-[10px]" >Loan</Badge>
                     )}
                   </div>
                 ))

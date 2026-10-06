@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   BookOpen,
@@ -194,6 +195,7 @@ function LookupPatronPassSkeleton() {
 }
 
 export default function Lookup() {
+  const nav = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'patron'
 
   // --- Public Catalog Explorer State ---
@@ -203,7 +205,7 @@ export default function Lookup() {
   const [selectedGenre, setSelectedGenre] = useState('');
   const [availFilter, setAvailFilter] = useState('all'); // 'all' | 'available' | 'borrowed'
   const [catalogView, setCatalogView] = useState('grid'); // 'grid' | 'table'
-  const [selectedBookForCopies, setSelectedBookForCopies] = useState(null);
+  
 
   // --- Patron Account State ---
   const [patronCode, setPatronCode] = useState('P-0001');
@@ -225,9 +227,10 @@ export default function Lookup() {
   const groupedTitles = useMemo(() => {
     const map = new Map();
     for (const item of catalogRows) {
-      const key = `${item.title}___${item.author || ''}`;
+      const key = (item.title || '').trim().toLowerCase();
       if (!map.has(key)) {
         map.set(key, {
+          id: item.id,
           title: item.title,
           author: item.author || 'Unknown Author',
           genre: item.genre || 'General',
@@ -302,7 +305,6 @@ export default function Lookup() {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                 Sto. Tomas Municipal Library · Self-Service Discovery Kiosk
               </span>
@@ -526,7 +528,6 @@ export default function Lookup() {
                         </Badge>
                         <Badge
                           variant={isAvailable ? 'success' : 'warning'}
-                          statusDot={true}
                           className="text-[10px]"
                         >
                           {isAvailable ? `${availableCopies}/${totalCopies} Available` : 'All On Loan'}
@@ -557,7 +558,7 @@ export default function Lookup() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => setSelectedBookForCopies(book)}
+                        onClick={() => nav(`/catalog/book/${book.id}`)}
                         className="h-8 rounded-xl text-xs font-semibold px-3"
                       >
                         Inspect Copies
@@ -610,7 +611,7 @@ export default function Lookup() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={isAvailable ? 'success' : 'warning'} statusDot={true}>
+                          <Badge variant={isAvailable ? 'success' : 'warning'}>
                             {isAvailable
                               ? `${availableCopies} of ${totalCopies} On Shelf`
                               : 'All Copies Borrowed'}
@@ -620,7 +621,7 @@ export default function Lookup() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setSelectedBookForCopies(book)}
+                            onClick={() => nav(`/catalog/book/${book.id}`)}
                             className="rounded-xl text-xs font-medium"
                           >
                             Copies ({totalCopies})
@@ -631,96 +632,6 @@ export default function Lookup() {
                   })}
                 </TableBody>
               </Table>
-            </div>
-          )}
-
-          {/* Copy Inspection Modal */}
-          {selectedBookForCopies && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150"
-              onClick={() => setSelectedBookForCopies(null)}
-            >
-              <div
-                className="w-full max-w-xl rounded-3xl border border-border/80 bg-card p-6 shadow-2xl space-y-5"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <Cover title={selectedBookForCopies.title} size="md" />
-                    <div>
-                      <h3 className="text-lg font-bold text-foreground leading-tight">
-                        {selectedBookForCopies.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">{selectedBookForCopies.author}</p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <Badge variant="neutral" className="text-[10px]">
-                          {selectedBookForCopies.genre}
-                        </Badge>
-                        <span className="font-mono text-xs text-muted-foreground">
-                          Shelf: {selectedBookForCopies.classification || 'Main Stacks'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedBookForCopies(null)}
-                    className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Physical Copies in Library ({selectedBookForCopies.copies.length})
-                  </h4>
-                  <div className="rounded-2xl border border-border/60 overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Copy Barcode</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Condition</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedBookForCopies.copies.map((c, idx) => {
-                          const isAvail = (c.status || '').toLowerCase() === 'available';
-                          return (
-                            <TableRow key={c.id || c.copyCode || idx}>
-                              <TableCell className="font-mono text-xs font-bold text-foreground">
-                                {c.copyCode || `COPY-${idx + 1}`}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={isAvail ? 'success' : 'warning'} statusDot={true}>
-                                  {c.status || 'Available'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="neutral" className="capitalize text-xs">
-                                  {c.condition || 'Good'}
-                                </Badge>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs text-muted-foreground">
-                  <span>To borrow, take this book to the Dual-QR Circulation station.</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl"
-                    onClick={() => setSelectedBookForCopies(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -819,7 +730,7 @@ export default function Lookup() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant="success" statusDot={true}>
+                  <Badge variant="success" >
                     Verified Pass
                   </Badge>
                 </div>
@@ -868,7 +779,7 @@ export default function Lookup() {
                                   {fmt(l.dueAt)}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <Badge variant={status.variant} statusDot={true}>
+                                  <Badge variant={status.variant} >
                                     {status.label}
                                   </Badge>
                                 </TableCell>

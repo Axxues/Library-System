@@ -5,7 +5,9 @@ import Desk from './pages/Desk.jsx';
 import Scan from './pages/Scan.jsx';
 import Catalog from './pages/Catalog.jsx';
 import AddBook from './pages/AddBook.jsx';
+import BookDetail from './pages/BookDetail.jsx';
 import Patrons from './pages/Patrons.jsx';
+import AddPatron from './pages/AddPatron.jsx';
 import Loans from './pages/Loans.jsx';
 import Lookup from './pages/Lookup.jsx';
 import Profile from './pages/Profile.jsx';
@@ -32,7 +34,9 @@ export default function App() {
           <Route path="/desk" element={page(<Desk />)} />
           <Route path="/scan" element={page(<Scan />)} />
           <Route path="/catalog/new" element={page(<AddBook />)} />
+          <Route path="/catalog/book/:id" element={page(<BookDetail />)} />
           <Route path="/catalog" element={page(<Catalog />)} />
+          <Route path="/patrons/new" element={page(<AddPatron />)} />
           <Route path="/patrons" element={page(<Patrons />)} />
           <Route path="/loans" element={page(<Loans />)} />
           <Route path="/lookup" element={<><Lookup /><Footer /></>} />

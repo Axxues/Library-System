@@ -1,0 +1,36 @@
+// Library System - DFD Level 0 (Context Diagram), Gane-Sarson notation.
+// External entity = rectangle (yellow), system process = rounded Gane-Sarson
+// process (number top-left, name middle, yellow bands top/bottom).
+// Style mirrors Gabay dfd-context.dot: ortho splines, compass-port lanes.
+digraph dfd_context {
+  rankdir=LR;
+  label="Library System - DFD Level 0 (Context Diagram)";
+  labelloc="t";
+  fontsize="16";
+  fontname="Arial";
+  node [fontsize="11", fontname="Arial"];
+  edge [fontsize="10", fontname="Arial", arrowhead=vee];
+  splines=ortho; ranksep=2.0; nodesep=2.0;
+  // ponytail: compass ports keep each direction in its own ortho lane
+
+  Patron [shape=box, style=filled, fillcolor="#FFF59D"];
+  Staff [shape=box, style=filled, fillcolor="#FFF59D"];
+  Admin [shape=box, style=filled, fillcolor="#FFF59D"];
+  // ponytail: process 0 as HTML table mimics Gane-Sarson rounded box
+  LIB [shape=plaintext, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" STYLE="ROUNDED" BGCOLOR="#FFF59D">
+      <TR><TD ALIGN="LEFT">0</TD></TR>
+      <HR/>
+      <TR><TD BGCOLOR="WHITE">Library System</TD></TR>
+      <HR/>
+      <TR><TD> </TD></TR>
+    </TABLE>
+  >];
+
+  Patron:ne -> LIB:nw [xlabel="Patron code\nSearch query\nCopy scan"];
+  LIB:sw -> Patron:se [xlabel="Catalog results\nLoan status\nRecommendations"];
+  Staff:w -> LIB:n [xlabel="Checkout / return\nPatron registration\nCondition update"];
+  LIB:e -> Staff:sw [xlabel="Loan receipt, due date\nRecommendations\nCopy QR"];
+  Admin:nw -> LIB:ne [xlabel="Books, copies\nAccounts, passwords"];
+  LIB:e -> Admin:w [xlabel="Catalog, QR codes\nLoans, logs, reports"];
+}

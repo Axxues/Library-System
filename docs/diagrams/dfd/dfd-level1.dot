@@ -1,0 +1,115 @@
+// Library System - DFD Level 1 (single diagram: processes 1-4).
+// Gane-Sarson notation: external entity = yellow rectangle, process = rounded
+// box (number top-left, name middle, yellow bands), data store = rectangle
+// (grey D-id + yellow name).
+// Lanes: vertical trunks run ONLY in column gaps (never through boxes);
+// each arrowhead lands on its box edge.
+// Stores map to db/schema.sql: D1 Users; D2 Books(+BookCopies); D3 Patrons;
+// D4 Loans; D5 Logs.
+digraph dfd_level1 {
+  rankdir=LR;
+  label="Library System - DFD Level 1";
+  labelloc="t";
+  fontsize="16";
+  fontname="Arial";
+  node [fontsize="11", fontname="Arial"];
+  edge [fontsize="10", fontname="Arial", arrowhead=vee];
+  splines=ortho; ranksep=3.0; nodesep=2.4; overlap=false;
+  size="12,12"; ratio=fill; pad=0.5;
+
+  { rank=source; Admin; Staff; Patron; }
+  { rank=same; P1; P2; P3; P4; }
+  { rank=sink; D1; D2; D3; D4; D5; }
+  // ponytail: invisible chains pin top-to-bottom order inside each column
+  Admin -> Staff -> Patron [style=invis];
+  P1 -> P2 -> P3 -> P4 [style=invis];
+  D1 -> D2 -> D3 -> D4 -> D5 [style=invis];
+
+  Admin [shape=box, style=filled, fillcolor="#FFF59D", group=g1];
+  Staff [shape=box, style=filled, fillcolor="#FFF59D", group=g2];
+  Patron [shape=box, style=filled, fillcolor="#FFF59D", group=g3];
+
+  // ponytail: HTML-table processes mimic Gane-Sarson rounded boxes
+  P1 [shape=plaintext, group=g1, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" STYLE="ROUNDED" BGCOLOR="#FFF59D">
+      <TR><TD ALIGN="LEFT">1</TD></TR><HR/>
+      <TR><TD BGCOLOR="WHITE">Manage Accounts<BR/>and Auth</TD></TR><HR/>
+      <TR><TD> </TD></TR>
+    </TABLE>
+  >];
+  P2 [shape=plaintext, group=g2, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" STYLE="ROUNDED" BGCOLOR="#FFF59D">
+      <TR><TD ALIGN="LEFT">2</TD></TR><HR/>
+      <TR><TD BGCOLOR="WHITE">Manage Catalog<BR/>and Copies</TD></TR><HR/>
+      <TR><TD> </TD></TR>
+    </TABLE>
+  >];
+  P3 [shape=plaintext, group=g3, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" STYLE="ROUNDED" BGCOLOR="#FFF59D">
+      <TR><TD ALIGN="LEFT">3</TD></TR><HR/>
+      <TR><TD BGCOLOR="WHITE">Manage Patrons</TD></TR><HR/>
+      <TR><TD> </TD></TR>
+    </TABLE>
+  >];
+  P4 [shape=plaintext, group=g3, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" STYLE="ROUNDED" BGCOLOR="#FFF59D">
+      <TR><TD ALIGN="LEFT">4</TD></TR><HR/>
+      <TR><TD BGCOLOR="WHITE">Circulate and<BR/>Recommend</TD></TR><HR/>
+      <TR><TD> </TD></TR>
+    </TABLE>
+  >];
+
+  D1 [shape=plaintext, group=g1, label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#D3D3D3">D1</TD><TD BGCOLOR="#FFF59D">Users</TD></TR>
+    </TABLE>
+  >];
+  D2 [shape=plaintext, group=g2, label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#D3D3D3">D2</TD><TD BGCOLOR="#FFF59D">Books and<BR/>Copies</TD></TR>
+    </TABLE>
+  >];
+  D3 [shape=plaintext, group=g3, label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#D3D3D3">D3</TD><TD BGCOLOR="#FFF59D">Patrons</TD></TR>
+    </TABLE>
+  >];
+  D4 [shape=plaintext, group=g3, label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#D3D3D3">D4</TD><TD BGCOLOR="#FFF59D">Loans</TD></TR>
+    </TABLE>
+  >];
+  D5 [shape=plaintext, group=g3, label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#D3D3D3">D5</TD><TD BGCOLOR="#FFF59D">Logs</TD></TR>
+    </TABLE>
+  >];
+
+  // ponytail: compass ports keep each direction in its own ortho lane
+  Admin:e -> P1:w [xlabel="credentials, account data"];
+  P1:w -> Admin:e [xlabel="token / confirmation"];
+  P1:e -> D1:w [xlabel="store accounts"];
+  D1:w -> P1:e [xlabel="account records", style=dashed];
+
+  Staff:n -> P2:w [xlabel="title, author, genre, copies"];
+  P2:w -> Staff:n [xlabel="book + copy codes, QR"];
+  P2:e -> D2:w [xlabel="store books/copies"];
+  Patron:n -> P2:w [xlabel="search query"];
+  P2:s -> Patron:n [xlabel="catalog results"];
+
+  Staff:e -> P3:w [xlabel="patron details"];
+  P3:w -> Staff:e [xlabel="patron code"];
+  P3:e -> D3:w [xlabel="register / update"];
+
+  // ponytail: long-haul edges use side ports so trunks stay in column gaps
+  Staff:s -> P4:w [xlabel="checkout / return scan"];
+  P4:w -> Staff:s [xlabel="receipt, condition flag"];
+  Patron:s -> P4:w [xlabel="patron + copy codes"];
+  P4:w -> Patron:s [xlabel="receipt, due date"];
+  D2:s -> P4:e [xlabel="copy status"];
+  P4:e -> D2:w [xlabel="status update"];
+  D3:w -> P4:s [xlabel="patron record"];
+  P4:e -> D4:w [xlabel="loan / return"];
+  D4:w -> P4:e [xlabel="loan history", style=dashed];
+  P4:e -> D5:w [xlabel="action, ms"];
+}
